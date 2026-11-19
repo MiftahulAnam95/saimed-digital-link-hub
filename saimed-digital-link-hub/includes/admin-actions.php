@@ -57,10 +57,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if ($action === 'add') {
                 $key = trim(preg_replace('/[^a-z0-9]+/', '-', strtolower($title)), '-');
                 $key = $key ?: 'tautan';
+                $sortOrder = (int) $db->query('SELECT COALESCE(MAX(sort_order), 0) + 1 FROM links')->fetchColumn();
                 $stmt = $db->prepare(
-                    'INSERT INTO links (key, title, url, icon, sort_order)
-                     VALUES (:key, :title, :url, :icon,
-                         (SELECT COALESCE(MAX(sort_order), 0) + 1 FROM links))',
+                    'INSERT INTO links (`key`, title, url, icon, sort_order)
+                     VALUES (:key, :title, :url, :icon, :sort_order)'
                 );
                 $stmt->execute([
                     'key' =>
@@ -68,6 +68,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     'title' => $title,
                     'url' => $url,
                     'icon' => $icon,
+                    'sort_order' => $sortOrder,
                 ]);
             } else {
                 $id = filter_var($_POST['id'] ?? null, FILTER_VALIDATE_INT, [
@@ -79,7 +80,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $stmt = $db->prepare(
                     'UPDATE links
                      SET title = :title, url = :url, icon = :icon, sort_order = :sort_order,
-                         is_active = CAST(:active AS boolean), featured = CAST(:featured AS boolean),
+                         is_active = :active, featured = :featured,
                          updated_at = NOW()
                      WHERE id = :id',
                 );
@@ -88,14 +89,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     'url' => $url,
                     'icon' => $icon,
                     'sort_order' => (int) ($_POST['sort_order'] ?? 0),
-                    'active' => isset($_POST['is_active']) ? 'true' : 'false',
-                    'featured' => isset($_POST['featured']) ? 'true' : 'false',
+                    'active' => isset($_POST['is_active']) ? 1 : 0,
+                    'featured' => isset($_POST['featured']) ? 1 : 0,
                     'id' => $id,
                 ]);
+                // MySQL dapat mengembalikan 0 jika nilai tidak berubah.
                 if (!$stmt->rowCount()) {
-                    throw new InvalidArgumentException(
-                        'Tautan tidak ditemukan.',
-                    );
+                    $check = $db->prepare('SELECT id FROM links WHERE id = :id');
+                    $check->execute(['id' => $id]);
+                    if (!$check->fetch()) {
+                        throw new InvalidArgumentException('Tautan tidak ditemukan.');
+                    }
                 }
             }
             $_SESSION['notice'] = 'Tautan berhasil disimpan.';
@@ -113,7 +117,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $db->beginTransaction();
             $db->exec('DELETE FROM analytics_events WHERE is_demo = true');
             $all = $db
-                ->query('SELECT id,key,title FROM links ORDER BY sort_order,id')
+                ->query('SELECT id, `key`, title FROM links ORDER BY sort_order, id')
                 ->fetchAll();
             $stmt = $db->prepare(
                 "INSERT INTO analytics_events
@@ -126,7 +130,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $date =
                         gmdate('Y-m-d', strtotime("-$day days")) .
                         sprintf(
-                            ' %02d:%02d:00+00',
+                            ' %02d:%02d:00',
                             8 + (($i * 3) % 12),
                             ($i * 17) % 60,
                         );
