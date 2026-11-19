@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" focusable="false">
+  <path
+    d="M4.2 7.5h15.6l-1.1 12a2 2 0 0 1-2 1.8H7.3a2 2 0 0 1-2-1.8L4.2 7.5Z"
+    fill="#ee4d2d"
+  />
+  <path
+    d="M8.2 8V6.8a3.8 3.8 0 0 1 7.6 0V8"
+    fill="none"
+    stroke="#ee4d2d"
+    stroke-width="1.7"
+  />
+  <text
+    x="12"
+    y="18"
+    text-anchor="middle"
+    font-family="Arial,sans-serif"
+    font-size="10"
+    font-weight="bold"
+    fill="white"
+  >
+    S
+  </text>
+</svg>
