@@ -15,7 +15,7 @@ try {
     );
     $stmt->execute([
         'start' => gmdate(
-            'Y-m-d 00:00:00+00',
+            'Y-m-d 00:00:00',
             strtotime('-' . ($days - 1) . ' days'),
         ),
     ]);

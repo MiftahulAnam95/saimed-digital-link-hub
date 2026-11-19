@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-/** Membuka koneksi PostgreSQL sekali untuk setiap permintaan. */
+/** Membuka koneksi MySQL sekali untuk setiap permintaan. */
 function db(): PDO
 {
     static $connection = null;
@@ -10,37 +10,46 @@ function db(): PDO
         return $connection;
     }
 
+    // Nilai bawaan cocok untuk instalasi XAMPP lokal. Atur variabel ini di server produksi.
+    $host = getenv('DB_HOST') ?: '127.0.0.1';
+    $port = getenv('DB_PORT') ?: '3306';
+    $database = getenv('DB_DATABASE') ?: 'saimed';
+    $username = getenv('DB_USERNAME');
+    $password = getenv('DB_PASSWORD');
+    $username = $username === false ? 'root' : $username;
+    $password = $password === false ? '' : $password;
+
+    // DATABASE_URL juga didukung jika penyedia hosting menyediakan URL koneksi.
     $databaseUrl = getenv('DATABASE_URL');
-    if (!$databaseUrl) {
-        throw new RuntimeException('DATABASE_URL belum dikonfigurasi');
+    if ($databaseUrl) {
+        $parts = parse_url($databaseUrl);
+        if (!$parts || ($parts['scheme'] ?? '') !== 'mysql'
+            || empty($parts['host']) || empty($parts['path'])) {
+            throw new RuntimeException('DATABASE_URL harus berupa URL MySQL yang valid');
+        }
+        $host = $parts['host'];
+        $port = (string) ($parts['port'] ?? 3306);
+        $database = rawurldecode(ltrim($parts['path'], '/'));
+        $username = rawurldecode($parts['user'] ?? '');
+        $password = rawurldecode($parts['pass'] ?? '');
     }
 
-    $parts = parse_url($databaseUrl);
-    if (!$parts || !in_array($parts['scheme'] ?? '', ['postgres', 'postgresql'], true)
-        || empty($parts['host']) || empty($parts['path'])) {
-        throw new RuntimeException('DATABASE_URL tidak valid');
+    if (!preg_match('/^[a-zA-Z0-9_.:-]+$/', $host)
+        || !preg_match('/^[a-zA-Z0-9_$-]+$/', $database)
+        || !preg_match('/^[0-9]+$/', (string) $port) || (int) $port < 1 || (int) $port > 65535) {
+        throw new RuntimeException('Konfigurasi MySQL tidak valid');
     }
 
-    $dsn = 'pgsql:host=' . $parts['host']
-        . ';port=' . ($parts['port'] ?? 5432)
-        . ';dbname=' . ltrim($parts['path'], '/');
+    $dsn = 'mysql:host=' . $host . ';port=' . $port
+        . ';dbname=' . $database . ';charset=utf8mb4';
+    $connection = new PDO($dsn, $username, $password, [
+        PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+        PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+        PDO::ATTR_EMULATE_PREPARES => false,
+    ]);
 
-    parse_str($parts['query'] ?? '', $options);
-    $sslModes = ['disable', 'allow', 'prefer', 'require', 'verify-ca', 'verify-full'];
-    if (isset($options['sslmode']) && in_array($options['sslmode'], $sslModes, true)) {
-        $dsn .= ';sslmode=' . $options['sslmode'];
-    }
-
-    $connection = new PDO(
-        $dsn,
-        rawurldecode($parts['user'] ?? ''),
-        rawurldecode($parts['pass'] ?? ''),
-        [
-            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-            PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-            PDO::ATTR_EMULATE_PREPARES => false,
-        ]
-    );
+    // Semua waktu analytics disimpan dan dihitung sebagai UTC.
+    $connection->exec("SET time_zone = '+00:00'");
 
     return $connection;
 }

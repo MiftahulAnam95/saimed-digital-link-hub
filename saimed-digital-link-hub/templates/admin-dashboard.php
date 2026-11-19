@@ -67,7 +67,7 @@ $metrics = [
             <p class="notice" role="status"><?= h($notice) ?></p>
         <?php endif; ?>
         <?php if ($dbError): ?>
-            <p class="notice error">Database tidak tersedia. Konfigurasikan DATABASE_URL dan jalankan schema.sql.</p>
+            <p class="notice error">Database tidak tersedia. Periksa konfigurasi MySQL dan jalankan schema.sql.</p>
         <?php endif; ?>
 
         <?php if ($tab === 'overview'): ?>
@@ -215,7 +215,7 @@ $metrics = [
 
         <div class="panel demo">
             <div>
-                <strong>Data analytics tersimpan di PostgreSQL</strong>
+                <strong>Data analytics tersimpan di MySQL</strong>
                 <p><?= $demoCount ? h($demoCount) . ' event data contoh aktif pada periode ini.' : 'Semua angka berasal dari kunjungan dan klik nyata.' ?></p>
             </div>
             <form method="post">

@@ -82,7 +82,7 @@ function track(): void
             (event_type, link_id, link_key, target_label, visitor_id, path, referrer,
              user_agent, device, browser, os)
             VALUES
-            (:event, (SELECT id FROM links WHERE key = :lookup), :key, :label, :visitor,
+            (:event, (SELECT id FROM links WHERE `key` = :lookup), :key, :label, :visitor,
              :path, :referrer, :ua, :device, :browser, :os)';
         $statement = db()->prepare($sql);
         $statement->execute([

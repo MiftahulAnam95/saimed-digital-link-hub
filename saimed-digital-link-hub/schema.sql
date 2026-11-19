@@ -1,27 +1,49 @@
--- Jalankan sekali pada database PostgreSQL yang digunakan aplikasi.
+-- Pilih database MySQL/MariaDB terlebih dahulu, misalnya: USE saimed;
+-- Import file ini lewat phpMyAdmin atau mysql CLI. Data yang sudah ada tidak dihapus.
 CREATE TABLE IF NOT EXISTS links (
-  id SERIAL PRIMARY KEY, key TEXT NOT NULL UNIQUE, title TEXT NOT NULL,
-  url TEXT NOT NULL, icon TEXT NOT NULL DEFAULT 'link', sort_order INTEGER NOT NULL DEFAULT 0,
-  is_active BOOLEAN NOT NULL DEFAULT TRUE, featured BOOLEAN NOT NULL DEFAULT FALSE,
-  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(), updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-);
+    id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    `key` VARCHAR(120) COLLATE utf8mb4_bin NOT NULL UNIQUE,
+    title VARCHAR(255) NOT NULL,
+    url TEXT NOT NULL,
+    icon VARCHAR(30) NOT NULL DEFAULT 'link',
+    sort_order INT NOT NULL DEFAULT 0,
+    is_active TINYINT(1) NOT NULL DEFAULT 1,
+    featured TINYINT(1) NOT NULL DEFAULT 0,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
 CREATE TABLE IF NOT EXISTS analytics_events (
-  id SERIAL PRIMARY KEY, event_type TEXT NOT NULL,
-  link_id INTEGER REFERENCES links(id) ON DELETE SET NULL, link_key TEXT, target_label TEXT,
-  visitor_id TEXT NOT NULL, path TEXT NOT NULL DEFAULT '/', referrer TEXT, user_agent TEXT,
-  device TEXT NOT NULL DEFAULT 'Desktop', browser TEXT NOT NULL DEFAULT 'Lainnya',
-  os TEXT NOT NULL DEFAULT 'Lainnya', is_demo BOOLEAN NOT NULL DEFAULT FALSE,
-  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-);
-CREATE INDEX IF NOT EXISTS analytics_events_created_at_idx ON analytics_events(created_at DESC);
--- Tidak menimpa pengaturan tautan yang sudah ada.
-INSERT INTO links (key, title, url, icon, sort_order, featured)
-SELECT seed.key, seed.title, seed.url, seed.icon, seed.sort_order, seed.featured
-FROM (VALUES
- ('shopee', 'Shopee', 'https://shopee.co.id/search?keyword=Sentra%20Alkes%20Indonesia', 'shopee', 1, false),
- ('tokopedia', 'Tokopedia', 'https://www.tokopedia.com/sentraalkes', 'tokopedia', 2, false),
- ('whatsapp', 'WhatsApp', 'https://wa.me/6281113310040?text=Halo%20SAIMED%2C%20saya%20ingin%20bertanya%20mengenai%20produk%20alat%20kesehatan.', 'whatsapp', 3, false),
- ('website-resmi', 'Website Resmi', '?page=official', 'website', 4, true)
-) AS seed(key, title, url, icon, sort_order, featured)
-WHERE NOT EXISTS (SELECT 1 FROM links)
-ON CONFLICT (key) DO NOTHING;
+    id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    event_type VARCHAR(40) NOT NULL,
+    link_id INT NULL,
+    link_key VARCHAR(120) COLLATE utf8mb4_bin NULL,
+    target_label VARCHAR(180) NULL,
+    visitor_id VARCHAR(120) NOT NULL,
+    path VARCHAR(240) NOT NULL DEFAULT '/',
+    referrer TEXT NULL,
+    user_agent TEXT NULL,
+    device VARCHAR(30) NOT NULL DEFAULT 'Desktop',
+    browser VARCHAR(30) NOT NULL DEFAULT 'Lainnya',
+    os VARCHAR(30) NOT NULL DEFAULT 'Lainnya',
+    is_demo TINYINT(1) NOT NULL DEFAULT 0,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    INDEX analytics_events_created_at_idx (created_at),
+    CONSTRAINT analytics_events_link_id_fk FOREIGN KEY (link_id)
+        REFERENCES links(id) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- Tambahkan tautan bawaan hanya jika tabel masih kosong.
+INSERT INTO links (`key`, title, url, icon, sort_order, featured)
+SELECT defaults_data.link_key, defaults_data.title, defaults_data.url,
+       defaults_data.icon, defaults_data.sort_order, defaults_data.featured
+FROM (
+    SELECT 'shopee' AS link_key, 'Shopee' AS title,
+        'https://shopee.co.id/search?keyword=Sentra%20Alkes%20Indonesia' AS url,
+        'shopee' AS icon, 1 AS sort_order, 0 AS featured
+    UNION ALL SELECT 'tokopedia', 'Tokopedia', 'https://www.tokopedia.com/sentraalkes', 'tokopedia', 2, 0
+    UNION ALL SELECT 'whatsapp', 'WhatsApp', 'https://wa.me/6281113310040?text=Halo%20SAIMED%2C%20saya%20ingin%20bertanya%20mengenai%20produk%20alat%20kesehatan.', 'whatsapp', 3, 0
+    UNION ALL SELECT 'website-resmi', 'Website Resmi', '?page=official', 'website', 4, 1
+) AS defaults_data
+CROSS JOIN (SELECT COUNT(*) AS total FROM links) AS existing
+WHERE existing.total = 0;
