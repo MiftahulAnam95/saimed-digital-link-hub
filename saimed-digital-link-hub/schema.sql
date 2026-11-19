@@ -21,7 +21,7 @@ FROM (VALUES
  ('shopee', 'Shopee', 'https://shopee.co.id/search?keyword=Sentra%20Alkes%20Indonesia', 'shopee', 1, false),
  ('tokopedia', 'Tokopedia', 'https://www.tokopedia.com/sentraalkes', 'tokopedia', 2, false),
  ('whatsapp', 'WhatsApp', 'https://wa.me/6281113310040?text=Halo%20SAIMED%2C%20saya%20ingin%20bertanya%20mengenai%20produk%20alat%20kesehatan.', 'whatsapp', 3, false),
- ('website-resmi', 'Website Resmi SAIMED', '?page=official', 'website', 4, true)
+ ('website-resmi', 'Website Resmi', '?page=official', 'website', 4, true)
 ) AS seed(key, title, url, icon, sort_order, featured)
 WHERE NOT EXISTS (SELECT 1 FROM links)
 ON CONFLICT (key) DO NOTHING;
