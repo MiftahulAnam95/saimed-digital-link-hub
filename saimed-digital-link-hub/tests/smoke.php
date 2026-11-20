@@ -37,5 +37,16 @@ $html = ob_get_clean();
 expect(str_contains($html, '&lt;script&gt;'), 'Judul tautan di-escape');
 expect(!str_contains($html, '<script>alert(1)</script>'), 'Skrip tidak dirender');
 expect(str_contains($html, 'assets/public.js'), 'Interaksi halaman dimuat');
+expect(!str_contains($html, 'assets/admin.css'), 'Halaman publik tidak memuat CSS admin');
+
+// Header bersama harus mengamankan judul dan memuat CSS sesuai halaman.
+$page_title = '<judul uji>';
+$admin_page = true;
+ob_start();
+require __DIR__ . '/../includes/header.php';
+require __DIR__ . '/../includes/footer.php';
+$adminHeader = ob_get_clean();
+expect(str_contains($adminHeader, '&lt;judul uji&gt;'), 'Judul header di-escape');
+expect(str_contains($adminHeader, 'assets/admin.css'), 'CSS admin dimuat');
 
 echo "Smoke test berhasil.\n";

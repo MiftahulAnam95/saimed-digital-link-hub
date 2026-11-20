@@ -1,5 +1,7 @@
 <?php
-page_start('Admin Analytics | SAIMED', true);
+$page_title = 'Admin Analytics | SAIMED';
+$admin_page = true;
+require __DIR__ . '/../includes/header.php';
 
 $tabs = [
     'overview' => 'Ringkasan',
@@ -241,4 +243,4 @@ $metricIcons = [
     </main>
 </div>
 
-<?php page_end(); ?>
+<?php require __DIR__ . '/../includes/footer.php'; ?>

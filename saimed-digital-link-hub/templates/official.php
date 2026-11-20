@@ -1,4 +1,8 @@
-<?php page_start('Website Resmi SAIMED | Sentra Alkes Indonesia'); ?>
+<?php
+$page_title = 'Website Resmi SAIMED | Sentra Alkes Indonesia';
+$admin_page = false;
+require __DIR__ . '/../includes/header.php';
+?>
 
 <main class="official">
     <a class="back" href="./">← Kembali ke Link Hub</a>
@@ -27,4 +31,4 @@
     <p class="copyright">© SAIMED <?= date('Y') ?> · All Rights Reserved</p>
 </main>
 
-<?php page_end(); ?>
+<?php require __DIR__ . '/../includes/footer.php'; ?>

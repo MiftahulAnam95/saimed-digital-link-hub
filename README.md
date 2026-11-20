@@ -29,7 +29,7 @@ cd saimed-digital-link-hub
 php -S 0.0.0.0:8000 router.php
 ```
 
-Atur variabel lingkungan pada proses PHP sebelum menjalankan perintah tersebut; `.htaccess` hanya dibaca Apache, bukan server bawaan PHP. Halaman resmi tersedia di `?page=official`. Rute `/admin` dan `/official` juga tersedia melalui router PHP atau Apache dengan `mod_rewrite`. Pada server lain, arahkan permintaan yang bukan aset statis ke `index.php` dan larang akses langsung ke `includes/`, `templates/`, `tests/`, file SQL, serta konfigurasi server.
+Atur variabel lingkungan pada proses PHP sebelum menjalankan perintah tersebut; `.htaccess` hanya dibaca Apache, bukan server bawaan PHP. Halaman resmi tersedia di `?page=official`. Rute `/admin` dan `/official` juga tersedia melalui router PHP atau Apache dengan `mod_rewrite`. Pada server lain, arahkan permintaan yang bukan aset statis ke `index.php` dan larang akses langsung ke `config/`, `includes/`, `templates/`, `tests/`, file SQL, serta konfigurasi server.
 
 ## Data dan migrasi
 
@@ -44,7 +44,11 @@ Jalankan `php tests/smoke.php` dan `php -l` pada file PHP. Setelah database MySQ
 ## Struktur kode
 
 - `index.php`: pintu masuk, pengaturan sesi, dan pemilihan halaman/API.
-- `app.php` dan `includes/`: konfigurasi serta fungsi database, tautan, keamanan, analytics, dan tampilan bersama.
+- `config/`: konfigurasi aplikasi dan koneksi MySQL melalui PDO.
+- `api/`: endpoint pencatatan aktivitas dan pemeriksaan database.
+- `includes/`: fungsi bersama serta header dan footer yang disertakan di halaman.
 - `admin.php` dan `official.php`: logika halaman administrator dan profil resmi.
 - `templates/`: HTML halaman publik, login, dan dashboard.
 - `assets/`: CSS, JavaScript untuk interaksi browser, logo, dan ikon SVG.
+
+Struktur PHP prosedural mengikuti pola konfigurasi dan `include` pada proyek referensi. Aplikasi ini tidak memerlukan folder `vendor` atau aset template eksternal.
