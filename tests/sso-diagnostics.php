@@ -17,11 +17,9 @@ try {
     $db->row = [];
     sso_authenticate($db, $token, $website);
     $db->row = $original;
-    $db->row['key_token'] = 'wrong-secret';
-    sso_authenticate($db, $token, $website);
+    sso_authenticate($db, \Firebase\JWT\JWT::encode($payload, 'wrong-secret', 'HS256'), $website);
     $db->row = $original;
-    $db->row['id_user'] = 99;
-    sso_authenticate($db, $token, $website);
+    sso_authenticate($db, \Firebase\JWT\JWT::encode($payload + ['id_user' => 99], $key, 'HS256'), $website);
     sso_authenticate($db, \Firebase\JWT\JWT::encode(['id_user' => 12, 'exp' => time() - 1], $key, 'HS256'), $website);
     $logs = file_get_contents($logFile);
     expect_sso(is_string($logs), 'Log harus tersedia');
