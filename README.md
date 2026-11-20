@@ -17,6 +17,10 @@ Atur key di konfigurasi environment server yang aman, bukan di repository atau c
 
 Daftarkan URL aplikasi dan hak akses akun pada SSO; pastikan cookie SSO dikirim ke origin dan path aplikasi. Setelah tombol login admin digunakan, aplikasi menyimpan tujuan login selama 10 menit dan mengarahkan kembali ke admin ketika browser kembali ke halaman utama dengan cookie SSO. Sesi aplikasi memakai cookie terpisah agar tidak terhapus saat logout SSO; token dan hak akses tetap diverifikasi sebelum dashboard dibuka. Logout menggunakan endpoint SSO dan mengakhiri sesi SSO bersama. Untuk produksi gunakan HTTPS dan akses database privat yang aman. Alur penuh perlu diuji dengan server SSO yang sebenarnya.
 
+## Diagnostik login SSO
+
+Jika kembali ke halaman login dengan pesan sesi tidak valid, cari baris terbaru `SAIMED SSO: validasi ditolak [kode]` di error log PHP/Apache setelah mencoba login. Kode tersebut menunjukkan tahap yang gagal tanpa mencatat JWT, cookie, key, atau identitas pengguna. Misalnya `token_atau_akses_website_tidak_ditemukan` berarti tidak ditemukan baris yang cocok untuk cookie dan URL pada database SSO yang dikonfigurasi; `tanda_tangan_jwt_tidak_valid` berarti verifikasi tanda tangan gagal; dan `id_user_tidak_cocok` berarti klaim identitas berbeda. Data akses yang ditampilkan untuk akun belum tentu terkait dengan cookie yang sedang digunakan. Jangan membagikan token, key, atau password saat meminta bantuan.
+
 ## Pengujian
 
-Jalankan `php tests/smoke.php`, `php tests/sso.php`, `php tests/sso-url.php`, `php tests/sso-return.php`, dan pemeriksaan sintaks PHP. Tes SSO memerlukan dependensi Composer; tes URL memerlukan ekstensi OpenSSL.
+Jalankan `php tests/smoke.php`, `php tests/sso.php`, `php tests/sso-diagnostics.php`, `php tests/sso-url.php`, `php tests/sso-return.php`, dan pemeriksaan sintaks PHP. Tes SSO memerlukan dependensi Composer; tes URL memerlukan ekstensi OpenSSL.
