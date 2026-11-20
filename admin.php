@@ -30,16 +30,22 @@ if (is_string($token) && $token !== '') {
                 && time() - $_SESSION['sso_last_activity'] > 1800)
         );
         if ($timedOut) {
-            // Jangan izinkan token yang sama masuk lagi jika URL logout belum dapat dibuat.
+            // Token lama tetap diblokir sampai SSO menerbitkan token baru.
             $_SESSION['sso_timed_out'] = $tokenHash;
-            $logoutUrl = sso_logout_url();
-            $_SESSION = [];
-            session_destroy();
-            header('Location: ' . $logoutUrl, true, 303);
-            exit();
+            if (!empty($_SESSION['sso_login_returned'])) {
+                $identity = null;
+                $ssoError = 'Sesi SSO telah berakhir. Silakan periksa sesi SSO sebelum mencoba lagi.';
+            } else {
+                $logoutUrl = sso_logout_url();
+                unset($_SESSION['sso_token_hash'], $_SESSION['sso_last_activity']);
+                session_regenerate_id(true);
+                sso_mark_login_pending();
+                header('Location: ' . $logoutUrl, true, 303);
+                exit();
+            }
         }
         if ($identity) {
-            unset($_SESSION['sso_timed_out']);
+            unset($_SESSION['sso_timed_out'], $_SESSION['sso_login_pending_until'], $_SESSION['sso_login_returned']);
             if (!isset($_SESSION['sso_token_hash']) || !hash_equals($_SESSION['sso_token_hash'], $tokenHash)) {
                 session_regenerate_id(true);
                 $_SESSION['csrf'] = bin2hex(random_bytes(32));
@@ -62,13 +68,23 @@ $notice = $_SESSION['notice'] ?? '';
 unset($_SESSION['notice']);
 
 if (!$loggedIn) {
+    // Server SSO mungkin mengembalikan pengguna langsung ke /admin, bukan ke beranda.
+    if ($_SERVER['REQUEST_METHOD'] === 'GET' && sso_login_pending()) {
+        sso_mark_login_returned();
+    }
     try {
         $ssoLoginUrl = sso_logout_url();
+        if (sso_should_start_login($_SERVER['REQUEST_METHOD'], $loggedIn, $ssoError !== '')) {
+            sso_mark_login_pending();
+            header('Location: ' . $ssoLoginUrl, true, 302);
+            exit();
+        }
     } catch (Throwable $e) {
         error_log('SAIMED SSO: ' . $e->getMessage());
         $ssoLoginUrl = null;
         $ssoError = 'SSO belum tersedia. Periksa konfigurasi dan ekstensi OpenSSL.';
     }
+    // Tampilkan kesalahan tanpa redirect ulang jika login gagal, supaya tidak looping.
     require __DIR__ . '/templates/admin-login.php';
     return;
 }
