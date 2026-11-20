@@ -1,5 +1,5 @@
 <?php
-page_start('Admin Analytics | SAIMED');
+page_start('Admin Analytics | SAIMED', true);
 
 $tabs = [
     'overview' => 'Ringkasan',
@@ -7,10 +7,16 @@ $tabs = [
     'activity' => 'Aktivitas',
 ];
 $metrics = [
-    'Total Kunjungan' => $views,
-    'Total Klik' => $clicks,
-    'Pengunjung Unik' => count($visitors),
-    'Click-through Rate' => ($views ? round($clicks / $views * 100, 1) : 0) . '%',
+    ['label' => 'Total Kunjungan', 'value' => $views, 'icon' => 'eye'],
+    ['label' => 'Total Klik', 'value' => $clicks, 'icon' => 'click'],
+    ['label' => 'Pengunjung Unik', 'value' => count($visitors), 'icon' => 'users'],
+    ['label' => 'Click-through Rate', 'value' => ($views ? round($clicks / $views * 100, 1) : 0) . '%', 'icon' => 'chart'],
+];
+$metricIcons = [
+    'eye' => '<path d="M2 12s3.6-6 10-6 10 6 10 6-3.6 6-10 6S2 12 2 12Z"/><circle cx="12" cy="12" r="2.5"/>',
+    'click' => '<path d="m8 4 1 3M4 8l3 1m6-5-1 3M4 13l3-1m2-2 4 10 1.5-4.5L19 14 9 10Z"/>',
+    'users' => '<circle cx="9" cy="8" r="3"/><path d="M3 19v-1a6 6 0 0 1 12 0v1M16 5a3 3 0 0 1 0 6m1 3a5 5 0 0 1 4 5"/>',
+    'chart' => '<path d="M4 19h16M6 16v-4m5 4V8m5 8V5"/>',
 ];
 ?>
 
@@ -37,7 +43,7 @@ $metrics = [
         <div class="dash-title">
             <div>
                 <p class="small-label">DASHBOARD</p>
-                <h2>Selamat datang kembali 👋</h2>
+                <h2>Selamat datang kembali</h2>
                 <p>Pantau performa dan kelola tautan digital SAIMED.</p>
             </div>
             <form method="get">
@@ -59,6 +65,7 @@ $metrics = [
         <nav class="tabs" aria-label="Navigasi dashboard">
             <?php foreach ($tabs as $key => $label): ?>
                 <a class="<?= $tab === $key ? 'active' : '' ?>"
+                   <?= $tab === $key ? 'aria-current="page"' : '' ?>
                    href="?page=admin&amp;tab=<?= h($key) ?>&amp;days=<?= $days ?>"><?= h($label) ?></a>
             <?php endforeach; ?>
         </nav>
@@ -72,11 +79,17 @@ $metrics = [
 
         <?php if ($tab === 'overview'): ?>
             <div class="kpis">
-                <?php foreach ($metrics as $label => $value): ?>
+                <?php foreach ($metrics as $metric): ?>
                     <div class="panel kpi">
-                        <span><?= h($label) ?></span>
-                        <strong><?= h($value) ?></strong>
-                        <small><?= $days ?> hari terakhir</small>
+                        <div class="kpi-top">
+                            <span class="kpi-icon" aria-hidden="true">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><?= $metricIcons[$metric['icon']] ?></svg>
+                            </span>
+                            <span class="kpi-period"><?= $days ?> hari</span>
+                        </div>
+                        <span class="kpi-label"><?= h($metric['label']) ?></span>
+                        <strong><?= h($metric['value']) ?></strong>
+                        <small>Dalam <?= $days ?> hari terakhir</small>
                     </div>
                 <?php endforeach; ?>
             </div>
@@ -224,6 +237,7 @@ $metrics = [
                 <button class="button"><?= $demoCount ? 'Perbarui' : 'Muat' ?> Data Contoh</button>
             </form>
         </div>
+        <footer class="admin-footer"><span>© SAIMED <?= date('Y') ?></span><span>All Rights Reserved</span></footer>
     </main>
 </div>
 
