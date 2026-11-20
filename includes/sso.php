@@ -48,18 +48,24 @@ function sso_authenticate(PDO $database, string $token, string $website): ?array
     if (!class_exists(JWT::class)) {
         return sso_reject('dependensi_jwt');
     }
+    // test-sso menandatangani JWT dengan JWT_SECRET_KEY, bukan key_token acak.
+    $jwtKey = getenv('SSO_JWT_SECRET_KEY');
+    if (!is_string($jwtKey) || $jwtKey === '') {
+        return sso_reject('jwt_secret_belum_diatur');
+    }
     $stmt = $database->prepare(
-        'SELECT ut.key_token, ut.expired_token_time, us.id_user_status, us.status_perangkat,
+        'SELECT ut.expired_token_time, us.id_user_status, us.status_perangkat,
                 ua.id_user_akses, ua.is_blocked, u.id_user, u.nama_user, ur.nama_role
          FROM user_token ut
          INNER JOIN user_status us ON us.id_token = ut.id_token
          INNER JOIN user_akses ua ON us.id_user_akses = ua.id_user_akses
          INNER JOIN website_management w ON ua.id_website = w.id_website
-         INNER JOIN user u ON ua.id_user = u.id_user
+         INNER JOIN user u ON ua.id_user = u.id_user AND ut.id_user = u.id_user
          INNER JOIN user_role ur ON u.id_user_role = ur.id_user_role
-         WHERE ut.token = :token AND w.url_website = :website LIMIT 1'
+         WHERE ut.token = :token AND BINARY ut.token = BINARY :exact_token
+           AND w.url_website = :website LIMIT 1'
     );
-    $stmt->execute(['token' => $token, 'website' => $website]);
+    $stmt->execute(['token' => $token, 'exact_token' => $token, 'website' => $website]);
     $row = $stmt->fetch();
     if (!$row) {
         return sso_reject('token_atau_akses_website_tidak_ditemukan');
@@ -76,9 +82,6 @@ function sso_authenticate(PDO $database, string $token, string $website): ?array
     if (empty($row['id_user_akses'])) {
         return sso_reject('akses_tidak_valid');
     }
-    if (!is_string($row['key_token']) || $row['key_token'] === '') {
-        return sso_reject('key_token_kosong');
-    }
     // Referensi SSO menggunakan waktu Asia/Jakarta untuk kolom expired_token_time.
     try {
         $expires = DateTimeImmutable::createFromFormat('!Y-m-d H:i:s', (string) $row['expired_token_time'], new DateTimeZone('Asia/Jakarta'));
@@ -93,7 +96,7 @@ function sso_authenticate(PDO $database, string $token, string $website): ?array
         return sso_reject('waktu_token_database_tidak_valid');
     }
     try {
-        $claims = JWT::decode($token, new Key($row['key_token'], 'HS256'));
+        $claims = JWT::decode($token, new Key($jwtKey, 'HS256'));
     } catch (\Firebase\JWT\ExpiredException $e) {
         return sso_reject('jwt_kedaluwarsa');
     } catch (\Firebase\JWT\BeforeValidException $e) {
@@ -103,8 +106,10 @@ function sso_authenticate(PDO $database, string $token, string $website): ?array
     } catch (Throwable $e) {
         return sso_reject('jwt_tidak_valid');
     }
-    if (!isset($claims->id_user) || !is_scalar($claims->id_user)
-        || (string) $claims->id_user !== (string) $row['id_user']) {
+    // Token terbaru tidak memiliki id_user; identitas terikat melalui JOIN database.
+    // Jika klaim tersedia, tetap wajib cocok.
+    if (property_exists($claims, 'id_user') && (!is_scalar($claims->id_user)
+        || (string) $claims->id_user !== (string) $row['id_user'])) {
         return sso_reject('id_user_tidak_cocok');
     }
     return ['id' => (string) $row['id_user'], 'name' => $row['nama_user']];

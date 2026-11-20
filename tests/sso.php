@@ -22,7 +22,10 @@ class SsoTestDatabase extends PDO
     public function __construct() {}
     public function prepare(string $query, array $options = []): PDOStatement|false
     {
-        expect_sso(str_contains($query, ':token') && str_contains($query, ':website'), 'Query harus menggunakan parameter');
+        expect_sso(str_contains($query, ':token') && str_contains($query, ':exact_token')
+            && str_contains($query, ':website'), 'Query harus menggunakan parameter');
+        expect_sso(str_contains($query, 'ut.id_user = u.id_user'), 'Pemilik token harus cocok dengan pemilik akses');
+        expect_sso(str_contains($query, 'BINARY ut.token = BINARY :exact_token'), 'Token harus cocok secara case-sensitive');
         return new SsoTestStatement($this);
     }
 }
@@ -42,26 +45,36 @@ class SsoTestStatement extends PDOStatement
 }
 
 $db = new SsoTestDatabase();
-$key = 'test-key-not-for-production';
-$token = JWT::encode(['id_user' => 12, 'exp' => time() + 300], $key, 'HS256');
+$key = 'test-jwt-key-not-for-production';
+putenv('SSO_JWT_SECRET_KEY=' . $key);
+// Format dari test-sso: tidak ada id_user, dan key_token di DB berbeda dari JWT_SECRET_KEY.
+$payload = ['iss' => 'http://localhost/saimed-digital-link-hub', 'iat' => time(), 'exp' => time() + 300, 'jti' => 'test-jti'];
+$token = JWT::encode($payload, $key, 'HS256');
 $db->row = [
-    'key_token' => $key,
+    'key_token' => 'random-not-the-signing-key',
     'expired_token_time' => (new DateTimeImmutable('+5 minutes', new DateTimeZone('Asia/Jakarta')))->format('Y-m-d H:i:s'),
     'id_user_status' => 1, 'status_perangkat' => 'Online', 'id_user_akses' => 1,
     'is_blocked' => 0, 'id_user' => 12, 'nama_user' => 'Admin', 'nama_role' => 'Super Admin',
 ];
 $website = 'http://localhost/saimed-digital-link-hub';
-expect_sso(sso_authenticate($db, $token, $website)['id'] === '12', 'Token valid ditolak');
-expect_sso($db->parameters === ['token' => $token, 'website' => $website], 'Parameter query tidak sesuai');
+expect_sso(sso_authenticate($db, $token, $website)['id'] === '12', 'Token SSO tanpa id_user ditolak');
+expect_sso($db->parameters === ['token' => $token, 'exact_token' => $token, 'website' => $website], 'Parameter query tidak sesuai');
+expect_sso(sso_authenticate($db, JWT::encode($payload + ['id_user' => 12], $key, 'HS256'), $website)['id'] === '12', 'Token dengan id_user cocok ditolak');
+expect_sso(sso_authenticate($db, JWT::encode($payload + ['id_user' => 99], $key, 'HS256'), $website) === null, 'id_user yang salah diterima');
 $original = $db->row;
-foreach ([['nama_role', 'User'], ['status_perangkat', 'Offline'], ['is_blocked', 1], ['id_user', 99], ['key_token', 'wrong'], ['expired_token_time', '2020-01-01 00:00:00'], ['expired_token_time', '']] as [$field, $value]) {
+foreach ([['nama_role', 'User'], ['status_perangkat', 'Offline'], ['is_blocked', 1], ['expired_token_time', '2020-01-01 00:00:00'], ['expired_token_time', '']] as [$field, $value]) {
     $db->row = $original;
     $db->row[$field] = $value;
     expect_sso(sso_authenticate($db, $token, $website) === null, "Data tidak valid diterima: $field");
 }
 $db->row = $original;
-expect_sso(sso_authenticate($db, JWT::encode(['id_user' => 12, 'exp' => time() - 1], $key, 'HS256'), $website) === null, 'JWT kedaluwarsa diterima');
+expect_sso(sso_authenticate($db, JWT::encode(['exp' => time() - 1], $key, 'HS256'), $website) === null, 'JWT kedaluwarsa diterima');
+expect_sso(sso_authenticate($db, JWT::encode($payload, 'wrong-secret', 'HS256'), $website) === null, 'Tanda tangan salah diterima');
 expect_sso(sso_authenticate($db, 'bukan.jwt.valid', $website) === null, 'JWT rusak diterima');
 $db->row = [];
 expect_sso(sso_authenticate($db, $token, $website) === null, 'Token tanpa akses website diterima');
+$db->row = $original;
+putenv('SSO_JWT_SECRET_KEY');
+expect_sso(sso_authenticate($db, $token, $website) === null, 'Key yang belum diatur harus ditolak');
+putenv('SSO_JWT_SECRET_KEY=' . $key);
 echo "Tes SSO berhasil.\n";
