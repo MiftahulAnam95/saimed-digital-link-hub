@@ -1,6 +1,6 @@
 RewriteEngine On
 # Folder internal hanya boleh dimuat oleh PHP, bukan diakses langsung.
-RewriteRule ^(config|includes|templates|tests)/ - [F,L,NC]
+RewriteRule ^(config|includes|templates|tests|vendor)/ - [F,L,NC]
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
 RewriteRule ^ index.php [L,QSA]

@@ -6,32 +6,6 @@ declare(strict_types=1);
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     check_csrf();
     $action = $_POST['action'] ?? '';
-    if ($action === 'login') {
-        $password = getenv('ADMIN_PASSWORD');
-        $attempts = $_SESSION['login_attempts'] ?? [];
-        $attempts = array_values(
-            array_filter($attempts, fn($time) => $time > time() - 900),
-        );
-        if (count($attempts) >= 10) {
-            $_SESSION['notice'] =
-                'Terlalu banyak percobaan. Coba lagi dalam 15 menit.';
-        } elseif (
-            is_string($password) &&
-            $password !== '' &&
-            hash_equals($password, (string) ($_POST['password'] ?? ''))
-        ) {
-            session_regenerate_id(true);
-            $_SESSION['admin'] = true;
-            $_SESSION['login_attempts'] = [];
-            $_SESSION['csrf'] = bin2hex(random_bytes(32));
-        } else {
-            $attempts[] = time();
-            $_SESSION['login_attempts'] = $attempts;
-            $_SESSION['notice'] =
-                'Kata sandi administrator tidak sesuai atau belum dikonfigurasi.';
-        }
-        redirect_admin();
-    }
     if (!$loggedIn) {
         http_response_code(403);
         exit('Akses ditolak');
@@ -39,7 +13,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($action === 'logout') {
         $_SESSION = [];
         session_destroy();
-        redirect_admin();
+        header('Location: ' . sso_logout_url(), true, 303);
+        exit();
     }
     try {
         $db = db();

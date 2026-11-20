@@ -23,22 +23,13 @@ require __DIR__ . '/../includes/header.php';
                 </div>
                 <span class="badge">Area admin</span>
             </div>
-            <p class="login-hint">Masukkan kata sandi untuk melanjutkan.</p>
-
-            <?php if ($notice): ?>
-                <p class="notice" role="alert"><?= h($notice) ?></p>
+            <p class="login-hint">Masuk melalui SSO menggunakan akun Super Admin yang memiliki akses ke aplikasi ini.</p>
+            <?php if ($ssoError): ?>
+                <p class="notice" role="alert"><?= h($ssoError) ?></p>
+            <?php elseif (!empty($token)): ?>
+                <p class="notice" role="alert">Sesi SSO tidak valid atau akun tidak memiliki akses.</p>
             <?php endif; ?>
-
-            <form method="post">
-                <?php token_input(); ?>
-                <input type="hidden" name="action" value="login">
-                <label>
-                    Kata sandi
-                    <input type="password" name="password" placeholder="Masukkan kata sandi admin"
-                           autocomplete="current-password" required autofocus>
-                </label>
-                <button class="button primary" type="submit">Masuk ke Dashboard <span aria-hidden="true">↗</span></button>
-            </form>
+            <a class="button primary" href="<?= h(sso_logout_url()) ?>">Masuk melalui SSO <span aria-hidden="true">↗</span></a>
         </div>
 
         <footer class="admin-footer"><span>© SAIMED <?= date('Y') ?></span><span>All Rights Reserved</span></footer>
