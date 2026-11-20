@@ -16,10 +16,12 @@ function icon(string $name): string
 {
     $allowedIcons = ['instagram', 'whatsapp', 'shopee', 'tokopedia', 'website', 'link'];
     $iconName = in_array($name, $allowedIcons, true) ? $name : 'link';
-    $svg = file_get_contents(__DIR__ . '/../assets/icons/' . $iconName . '.svg');
+    $iconPath = 'assets/icons/' . $iconName . '.svg';
 
+    // Setiap SVG dimuat terpisah agar ID gradient dan clipPath tidak bertabrakan.
     return '<span class="platform-icon icon-' . h($iconName) . '" aria-hidden="true">'
-        . $svg . '</span>';
+        . '<img src="' . h($iconPath) . '" alt="" loading="eager">'
+        . '</span>';
 }
 
 function page_start(string $title): void
