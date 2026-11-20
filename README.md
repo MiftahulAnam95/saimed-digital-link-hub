@@ -15,8 +15,8 @@ Pastikan PHP memiliki ekstensi `openssl` dan `pdo_mysql` serta dependensi Compos
 
 Atur key di konfigurasi environment server yang aman, bukan di repository atau chat, dan restart Apache setelah perubahan. Jika key tidak diatur atau panjangnya tidak sesuai, tombol masuk dinonaktifkan. Key yang salah tetap akan menyebabkan kegagalan dekripsi di server SSO. Karena key dipakai bersama, batasi akses ke konfigurasi kedua server.
 
-Daftarkan URL aplikasi dan hak akses akun pada SSO; pastikan cookie SSO dikirim ke origin dan path aplikasi. Logout menggunakan endpoint SSO dan mengakhiri sesi SSO bersama. Untuk produksi gunakan HTTPS dan akses database privat yang aman. Alur penuh perlu diuji dengan server SSO yang sebenarnya.
+Daftarkan URL aplikasi dan hak akses akun pada SSO; pastikan cookie SSO dikirim ke origin dan path aplikasi. Setelah tombol login admin digunakan, aplikasi menyimpan tujuan login selama 10 menit dan mengarahkan kembali ke admin ketika browser kembali ke halaman utama dengan cookie SSO. Sesi aplikasi memakai cookie terpisah agar tidak terhapus saat logout SSO; token dan hak akses tetap diverifikasi sebelum dashboard dibuka. Logout menggunakan endpoint SSO dan mengakhiri sesi SSO bersama. Untuk produksi gunakan HTTPS dan akses database privat yang aman. Alur penuh perlu diuji dengan server SSO yang sebenarnya.
 
 ## Pengujian
 
-Jalankan `php tests/smoke.php`, `php tests/sso.php`, `php tests/sso-url.php`, dan pemeriksaan sintaks PHP. Tes SSO memerlukan dependensi Composer; tes URL memerlukan ekstensi OpenSSL.
+Jalankan `php tests/smoke.php`, `php tests/sso.php`, `php tests/sso-url.php`, `php tests/sso-return.php`, dan pemeriksaan sintaks PHP. Tes SSO memerlukan dependensi Composer; tes URL memerlukan ekstensi OpenSSL.

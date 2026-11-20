@@ -24,13 +24,19 @@ require __DIR__ . '/../includes/header.php';
                 <span class="badge">Area admin</span>
             </div>
             <p class="login-hint">Masuk melalui SSO menggunakan akun Super Admin yang memiliki akses ke aplikasi ini.</p>
-            <?php if ($ssoError): ?>
+            <?php if ($notice): ?>
+                <p class="notice" role="alert"><?= h($notice) ?></p>
+            <?php elseif ($ssoError): ?>
                 <p class="notice" role="alert"><?= h($ssoError) ?></p>
             <?php elseif (!empty($token)): ?>
                 <p class="notice" role="alert">Sesi SSO tidak valid atau akun tidak memiliki akses.</p>
             <?php endif; ?>
             <?php if ($ssoLoginUrl !== null): ?>
-                <a class="button primary" href="<?= h($ssoLoginUrl) ?>">Masuk melalui SSO <span aria-hidden="true">↗</span></a>
+                <form method="post" action="?page=admin">
+                    <?php token_input(); ?>
+                    <input type="hidden" name="action" value="sso-login">
+                    <button class="button primary" type="submit">Masuk melalui SSO <span aria-hidden="true">↗</span></button>
+                </form>
             <?php endif; ?>
         </div>
 

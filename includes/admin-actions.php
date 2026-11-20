@@ -6,6 +6,18 @@ declare(strict_types=1);
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     check_csrf();
     $action = $_POST['action'] ?? '';
+    if ($action === 'sso-login' && !$loggedIn) {
+        try {
+            $loginUrl = sso_logout_url();
+            sso_mark_login_pending();
+            header('Location: ' . $loginUrl, true, 303);
+            exit();
+        } catch (Throwable $e) {
+            error_log('SAIMED SSO: ' . $e->getMessage());
+            $_SESSION['notice'] = 'SSO belum tersedia. Periksa konfigurasi dan ekstensi OpenSSL.';
+            redirect_admin();
+        }
+    }
     if (!$loggedIn) {
         http_response_code(403);
         exit('Akses ditolak');

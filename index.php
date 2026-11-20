@@ -21,6 +21,8 @@ if (isset($_GET['api'])) {
     json_response(['error' => 'Tidak ditemukan'], 404);
 }
 
+// SSO juga memakai sesi PHP; pisahkan agar logout SSO tidak menghapus sesi aplikasi.
+session_name('SAIMEDSESSID');
 ini_set('session.use_strict_mode', '1');
 session_set_cookie_params([
     'httponly' => true,
@@ -35,6 +37,11 @@ if (!isset($_GET['page']) && str_ends_with((string) $requestPath, '/admin')) {
     $page = 'admin';
 } elseif (!isset($_GET['page']) && str_ends_with((string) $requestPath, '/official')) {
     $page = 'official';
+}
+
+require_once __DIR__ . '/includes/sso-return.php';
+if (sso_should_return_to_admin(is_string($page) ? $page : '', $_SERVER['REQUEST_METHOD'], $_COOKIE['jwt_token_test'] ?? null)) {
+    redirect_admin();
 }
 
 if ($page === 'admin') {
