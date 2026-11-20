@@ -24,7 +24,7 @@ function icon(string $name): string
         . '</span>';
 }
 
-function page_start(string $title): void
+function page_start(string $title, bool $admin = false): void
 {
     ?>
     <!doctype html>
@@ -36,6 +36,9 @@ function page_start(string $title): void
         <meta name="description" content="Tautan resmi SAIMED – Sentra Alkes Indonesia.">
         <title><?= h($title) ?></title>
         <link rel="stylesheet" href="assets/style.css">
+        <?php if ($admin): ?>
+            <link rel="stylesheet" href="assets/admin.css">
+        <?php endif; ?>
     </head>
     <body>
     <?php
