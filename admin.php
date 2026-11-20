@@ -23,15 +23,23 @@ if (is_string($token) && $token !== '') {
         }
         $identity = sso_authenticate(sso_db(), $token, sso_app_url());
         $tokenHash = hash('sha256', $token);
-        if ($identity && isset($_SESSION['sso_token_hash'], $_SESSION['sso_last_activity'])
-            && hash_equals($_SESSION['sso_token_hash'], $tokenHash)
-            && time() - $_SESSION['sso_last_activity'] > 1800) {
+        $timedOut = $identity && (
+            (isset($_SESSION['sso_timed_out']) && hash_equals($_SESSION['sso_timed_out'], $tokenHash))
+            || (isset($_SESSION['sso_token_hash'], $_SESSION['sso_last_activity'])
+                && hash_equals($_SESSION['sso_token_hash'], $tokenHash)
+                && time() - $_SESSION['sso_last_activity'] > 1800)
+        );
+        if ($timedOut) {
+            // Jangan izinkan token yang sama masuk lagi jika URL logout belum dapat dibuat.
+            $_SESSION['sso_timed_out'] = $tokenHash;
+            $logoutUrl = sso_logout_url();
             $_SESSION = [];
             session_destroy();
-            header('Location: ' . sso_logout_url(), true, 303);
+            header('Location: ' . $logoutUrl, true, 303);
             exit();
         }
         if ($identity) {
+            unset($_SESSION['sso_timed_out']);
             if (!isset($_SESSION['sso_token_hash']) || !hash_equals($_SESSION['sso_token_hash'], $tokenHash)) {
                 session_regenerate_id(true);
                 $_SESSION['csrf'] = bin2hex(random_bytes(32));
@@ -54,6 +62,13 @@ $notice = $_SESSION['notice'] ?? '';
 unset($_SESSION['notice']);
 
 if (!$loggedIn) {
+    try {
+        $ssoLoginUrl = sso_logout_url();
+    } catch (Throwable $e) {
+        error_log('SAIMED SSO: ' . $e->getMessage());
+        $ssoLoginUrl = null;
+        $ssoError = 'SSO belum tersedia. Periksa konfigurasi dan ekstensi OpenSSL.';
+    }
     require __DIR__ . '/templates/admin-login.php';
     return;
 }
