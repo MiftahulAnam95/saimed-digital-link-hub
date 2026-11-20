@@ -40,7 +40,7 @@ if (!isset($_GET['page']) && str_ends_with((string) $requestPath, '/admin')) {
 }
 
 require_once __DIR__ . '/includes/sso-return.php';
-if (sso_should_return_to_admin(is_string($page) ? $page : '', $_SERVER['REQUEST_METHOD'], $_COOKIE['jwt_token_test'] ?? null)) {
+if (sso_should_return_to_admin(is_string($page) ? $page : '', $_SERVER['REQUEST_METHOD'])) {
     redirect_admin();
 }
 
