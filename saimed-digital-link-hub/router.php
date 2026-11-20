@@ -4,7 +4,7 @@
 $path = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
 $file = __DIR__ . $path;
 
-if (preg_match('#^/(includes|templates|tests)/#i', $path)) {
+if (preg_match('#^/(config|includes|templates|tests)/#i', $path)) {
     http_response_code(403);
     exit('Akses ditolak');
 }

@@ -7,17 +7,14 @@ require __DIR__ . '/app.php';
 $requestPath = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH);
 $api = $_GET['api'] ?? '';
 
-if ($api === 'track' || $requestPath === '/api/track') {
-    track();
+if ($api === 'track' || in_array($requestPath, ['/api/track', '/api/track.php'], true)) {
+    require __DIR__ . '/api/track.php';
+    exit;
 }
 
-if ($api === 'health' || $requestPath === '/api/health') {
-    try {
-        db()->query('SELECT 1');
-        json_response(['ok' => true]);
-    } catch (Throwable $exception) {
-        json_response(['ok' => false], 500);
-    }
+if ($api === 'health' || in_array($requestPath, ['/api/health', '/api/health.php'], true)) {
+    require __DIR__ . '/api/health.php';
+    exit;
 }
 
 if (isset($_GET['api'])) {

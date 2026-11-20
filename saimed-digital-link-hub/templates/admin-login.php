@@ -1,4 +1,8 @@
-<?php page_start('Admin Analytics | SAIMED', true); ?>
+<?php
+$page_title = 'Admin Analytics | SAIMED';
+$admin_page = true;
+require __DIR__ . '/../includes/header.php';
+?>
 
 <main class="login-shell">
     <div class="login-container">
@@ -41,4 +45,4 @@
     </div>
 </main>
 
-<?php page_end(); ?>
+<?php require __DIR__ . '/../includes/footer.php'; ?>

@@ -1,4 +1,8 @@
-<?php page_start('SAIMED Digital Link Hub | sentraalkesindonesia'); ?>
+<?php
+$page_title = 'SAIMED Digital Link Hub | sentraalkesindonesia';
+$admin_page = false;
+require __DIR__ . '/../includes/header.php';
+?>
 
 <main class="public-shell">
     <div class="public-content">
@@ -57,4 +61,4 @@
 </main>
 <script src="assets/public.js" defer></script>
 
-<?php page_end(); ?>
+<?php require __DIR__ . '/../includes/footer.php'; ?>

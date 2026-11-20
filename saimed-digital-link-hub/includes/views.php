@@ -24,31 +24,6 @@ function icon(string $name): string
         . '</span>';
 }
 
-function page_start(string $title, bool $admin = false): void
-{
-    ?>
-    <!doctype html>
-    <html lang="id">
-    <head>
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        <meta name="theme-color" content="#ffffff">
-        <meta name="description" content="Tautan resmi SAIMED – Sentra Alkes Indonesia.">
-        <title><?= h($title) ?></title>
-        <link rel="stylesheet" href="assets/style.css">
-        <?php if ($admin): ?>
-            <link rel="stylesheet" href="assets/admin.css">
-        <?php endif; ?>
-    </head>
-    <body>
-    <?php
-}
-
-function page_end(): void
-{
-    echo '</body></html>';
-}
-
 function token_input(): void
 {
     echo '<input type="hidden" name="csrf" value="' . h(csrf()) . '">';
