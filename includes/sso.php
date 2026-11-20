@@ -16,7 +16,20 @@ function sso_app_url(): string
 function sso_logout_url(): string
 {
     $base = rtrim(getenv('SSO_BASE_URL') ?: 'http://localhost/test-sso', '/');
-    return $base . '/logout.php?url=' . rawurlencode(sso_app_url());
+    // test-sso mengharapkan base64url dari nonce (12 byte) + tag (16 byte) + ciphertext.
+    // decrypt() di server menggunakan AES_SECRET_KEY; URL_KEY bukan argumen yang digunakan.
+    $key = getenv('SSO_AES_SECRET_KEY');
+    if (!is_string($key) || strlen($key) !== 32 || !function_exists('openssl_encrypt')) {
+        throw new RuntimeException('SSO_AES_SECRET_KEY harus 32 byte dan ekstensi OpenSSL harus aktif.');
+    }
+    $nonce = random_bytes(12);
+    $tag = '';
+    $ciphertext = openssl_encrypt(sso_app_url(), 'aes-256-gcm', $key, OPENSSL_RAW_DATA, $nonce, $tag, '', 16);
+    if ($ciphertext === false || strlen($tag) !== 16) {
+        throw new RuntimeException('Gagal mengenkripsi URL untuk SSO.');
+    }
+    $encrypted = rtrim(strtr(base64_encode($nonce . $tag . $ciphertext), '+/', '-_'), '=');
+    return $base . '/logout.php?url=' . rawurlencode($encrypted);
 }
 
 /** Validasi token dan akses pada setiap request, termasuk setelah login. */

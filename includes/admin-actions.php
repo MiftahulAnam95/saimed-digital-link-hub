@@ -11,9 +11,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit('Akses ditolak');
     }
     if ($action === 'logout') {
+        try {
+            $logoutUrl = sso_logout_url();
+        } catch (Throwable $e) {
+            error_log('SAIMED SSO: ' . $e->getMessage());
+            $_SESSION['notice'] = 'Logout SSO belum tersedia. Periksa konfigurasi SSO.';
+            redirect_admin();
+        }
         $_SESSION = [];
         session_destroy();
-        header('Location: ' . sso_logout_url(), true, 303);
+        header('Location: ' . $logoutUrl, true, 303);
         exit();
     }
     try {

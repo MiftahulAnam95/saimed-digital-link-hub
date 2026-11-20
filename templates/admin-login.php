@@ -29,7 +29,9 @@ require __DIR__ . '/../includes/header.php';
             <?php elseif (!empty($token)): ?>
                 <p class="notice" role="alert">Sesi SSO tidak valid atau akun tidak memiliki akses.</p>
             <?php endif; ?>
-            <a class="button primary" href="<?= h(sso_logout_url()) ?>">Masuk melalui SSO <span aria-hidden="true">↗</span></a>
+            <?php if ($ssoLoginUrl !== null): ?>
+                <a class="button primary" href="<?= h($ssoLoginUrl) ?>">Masuk melalui SSO <span aria-hidden="true">↗</span></a>
+            <?php endif; ?>
         </div>
 
         <footer class="admin-footer"><span>© SAIMED <?= date('Y') ?></span><span>All Rights Reserved</span></footer>
