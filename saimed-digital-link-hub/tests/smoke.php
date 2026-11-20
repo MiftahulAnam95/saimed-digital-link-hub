@@ -20,8 +20,13 @@ foreach (['//evil.example', '/\\evil.example', 'javascript:alert(1)'] as $url) {
 expect(safe_url("https://example.com/\npath") === null, 'Karakter kontrol ditolak');
 expect(count(fallback_links()) === 4, 'Empat tautan bawaan tersedia');
 expect(parse_agent('Mozilla/5.0 (iPhone) Safari/605.1')[0] === 'Mobile', 'Perangkat dideteksi');
-expect(str_contains(icon('shopee'), '<svg'), 'Ikon SVG tersedia');
-expect(str_contains(icon('../../app.php'), 'icon-link'), 'Nama ikon dibatasi');
+foreach (['instagram', 'shopee', 'tokopedia', 'whatsapp', 'website', 'link'] as $iconName) {
+    $iconHtml = icon($iconName);
+    expect(is_file(__DIR__ . '/../assets/icons/' . $iconName . '.svg'), 'File ikon tersedia: ' . $iconName);
+    expect(str_contains($iconHtml, 'src="assets/icons/' . $iconName . '.svg"'), 'Ikon dimuat sebagai gambar terpisah: ' . $iconName);
+    expect(!str_contains($iconHtml, '<svg'), 'Definisi SVG tidak disisipkan ke halaman: ' . $iconName);
+}
+expect(str_contains(icon('../../app.php'), 'assets/icons/link.svg'), 'Nama ikon dibatasi');
 
 // Template harus tetap menampilkan teks dari database sebagai teks, bukan HTML.
 $publicLinks = fallback_links();
