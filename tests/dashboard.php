@@ -49,6 +49,9 @@ foreach (['overview' => 'Ringkasan', 'links' => 'Kelola Tautan', 'activity' => '
     expect_dashboard(str_contains($html, 'name="action" value="logout"'), 'Aksi logout harus tetap tersedia');
     expect_dashboard(str_contains($html, 'name="csrf" value="test-csrf"'), 'Form harus memiliki token CSRF');
     expect_dashboard(str_contains($html, 'name="days"'), 'Pemilihan periode harus tetap tersedia');
+    expect_dashboard((bool) preg_match('~<div class="dash-controls">\s*<form method="get" class="period-form">.*?</form>\s*<div class="report-actions">~s', $html), 'Filter dan tombol laporan harus dalam kelompok yang sama');
+    expect_dashboard(str_contains($html, 'href="?page=admin&amp;export=csv&amp;days=14"'), 'Ekspor harus mempertahankan periode');
+    expect_dashboard(str_contains($html, '<noscript><button class="button" type="submit">Terapkan</button></noscript>'), 'Filter tanpa JavaScript harus tetap tersedia');
     expect_dashboard(!str_contains($html, 'Data analytics tersimpan di MySQL'), 'Kartu analytics tidak boleh ditampilkan');
     expect_dashboard(!str_contains($html, 'Muat Data Contoh'), 'Tombol kartu data contoh tidak boleh ditampilkan');
     expect_dashboard(!str_contains($html, 'analytics-demo-note') && !str_contains($html, 'name="action" value="demo"'), 'Fitur data contoh tidak boleh ditampilkan');
