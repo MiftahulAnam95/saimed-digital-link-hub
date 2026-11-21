@@ -15,6 +15,7 @@ $admin_css_version = $admin_page && is_readable($admin_css_path) ? substr(hash_f
     <meta name="theme-color" content="#ffffff">
     <meta name="description" content="Tautan resmi SAIMED – Sentra Alkes Indonesia.">
     <title><?= h($page_title) ?></title>
+    <link rel="icon" type="image/x-icon" href="assets/favicon.ico">
     <link rel="stylesheet" href="assets/style.css?v=<?= h($style_css_version) ?>">
     <?php if ($admin_page): ?>
         <link rel="stylesheet" href="assets/admin.css?v=<?= h($admin_css_version) ?>">
