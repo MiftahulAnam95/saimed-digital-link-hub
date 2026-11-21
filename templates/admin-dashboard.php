@@ -2,11 +2,27 @@
 $page_title = 'Admin Analytics | SAIMED';
 $admin_page = true;
 require __DIR__ . '/../includes/header.php';
+require_once __DIR__ . '/../includes/dashboard-chart.php';
+$chart = dashboard_chart($daily);
+$deviceTotal = array_sum($devices);
+$mobileCount = (int) ($devices['Mobile'] ?? 0);
+$mobilePercent = $deviceTotal > 0 ? (int) round($mobileCount * 100 / $deviceTotal) : 0;
+$browserTotal = array_sum($browsers);
 
 $tabs = [
     'overview' => 'Ringkasan',
     'links' => 'Kelola Tautan',
     'activity' => 'Aktivitas',
+];
+$tabDescriptions = [
+    'overview' => 'Pantau performa dan aktivitas digital SAIMED dalam satu tempat.',
+    'links' => 'Atur tautan yang tampil di halaman publik SAIMED.',
+    'activity' => 'Lihat riwayat kunjungan dan interaksi pengunjung.',
+];
+$tabIcons = [
+    'overview' => '<rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/>',
+    'links' => '<path d="M10 13a5 5 0 0 0 7.1 0l2.1-2.1a5 5 0 0 0-7.1-7.1L11 5"/><path d="M14 11a5 5 0 0 0-7.1 0l-2.1 2.1a5 5 0 0 0 7.1 7.1L13 19"/>',
+    'activity' => '<path d="M3 12h4l3-7 4 14 3-7h4"/>',
 ];
 $metrics = [
     ['label' => 'Total Kunjungan', 'value' => $views, 'icon' => 'eye'],
@@ -23,54 +39,78 @@ $metricIcons = [
 ?>
 
 <div class="dashboard">
-    <header class="dash-header">
-        <div class="dash-brand">
+    <a class="dash-skip-link" href="#dashboard-content">Lewati ke konten utama</a>
+    <aside class="dash-sidebar" aria-label="Sidebar dashboard">
+        <div class="sidebar-brand">
             <?php avatar(true); ?>
-            <div>
-                <p class="small-label">SAIMED DIGITAL LINK HUB</p>
-                <h1>Admin Analytics</h1>
+            <div class="sidebar-brand-copy">
+                <strong>SAIMED</strong>
+                <span>Digital Link Hub</span>
             </div>
         </div>
-        <div class="dash-actions">
-            <a href="./" target="_blank" rel="noopener">Lihat halaman ↗</a>
-            <form method="post">
-                <?php token_input(); ?>
-                <input type="hidden" name="action" value="logout">
-                <button class="button">Keluar</button>
-            </form>
-        </div>
-    </header>
 
-    <main class="dash-main">
-        <div class="dash-title">
-            <div>
-                <p class="small-label">DASHBOARD</p>
-                <h2>Selamat datang kembali</h2>
-                <p>Pantau performa dan kelola tautan digital SAIMED.</p>
+        <div class="sidebar-section">
+            <p class="sidebar-label">MENU UTAMA</p>
+            <nav class="sidebar-nav" aria-label="Navigasi dashboard">
+                <?php foreach ($tabs as $key => $label): ?>
+                    <a class="sidebar-link <?= $tab === $key ? 'active' : '' ?>"
+                       <?= $tab === $key ? 'aria-current="page"' : '' ?>
+                       href="?page=admin&amp;tab=<?= h($key) ?>&amp;days=<?= $days ?>">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><?= $tabIcons[$key] ?></svg>
+                        <span><?= h($label) ?></span>
+                    </a>
+                <?php endforeach; ?>
+            </nav>
+        </div>
+        <div class="sidebar-bottom">
+            <div class="sidebar-status">SAIMED DIGITAL</div>
+            <p>Semua tautan dan aktivitas<br>di satu tempat.</p>
+        </div>
+    </aside>
+
+    <div class="dash-workspace">
+        <header class="dash-header">
+            <div class="dash-breadcrumb">
+                <span>SAIMED DIGITAL LINK HUB</span>
+                <strong>Dashboard <span aria-hidden="true">/</span> <?= h($tabs[$tab]) ?></strong>
             </div>
-            <form method="get">
-                <input type="hidden" name="page" value="admin">
-                <input type="hidden" name="tab" value="<?= h($tab) ?>">
-                <label>Periode
-                    <select name="days" onchange="this.form.submit()">
+            <div class="dash-actions">
+                <a class="view-site" href="./" target="_blank" rel="noopener" aria-label="Lihat halaman publik (terbuka di tab baru)">
+                    <span>Lihat halaman</span>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13 5h6v6M19 5l-9 9"/><path d="M19 14v4a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h4"/></svg>
+                </a>
+                <form method="post">
+                    <?php token_input(); ?>
+                    <input type="hidden" name="action" value="logout">
+                    <button class="button logout-button" type="submit">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 17v2a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h3a2 2 0 0 1 2 2v2M14 16l4-4-4-4M8 12h10"/></svg>
+                        Keluar
+                    </button>
+                </form>
+            </div>
+        </header>
+
+        <main class="dash-main" id="dashboard-content" tabindex="-1">
+            <div class="dash-title">
+                <div>
+                    <p class="dash-eyebrow">ADMIN ANALYTICS <span aria-hidden="true">/</span> <?= h(strtoupper($tabs[$tab])) ?></p>
+                    <h1><?= $tab === 'overview' ? 'Selamat datang kembali' : h($tabs[$tab]) ?></h1>
+                    <p><?= h($tabDescriptions[$tab]) ?></p>
+                </div>
+                <form method="get" class="period-form">
+                    <input type="hidden" name="page" value="admin">
+                    <input type="hidden" name="tab" value="<?= h($tab) ?>">
+                    <label for="dashboard-period">Periode data</label>
+                    <select id="dashboard-period" name="days" onchange="this.form.submit()">
                         <?php foreach ([7, 14, 30] as $period): ?>
                             <option value="<?= $period ?>" <?= $period === $days ? 'selected' : '' ?>>
                                 <?= $period ?> hari terakhir
                             </option>
                         <?php endforeach; ?>
                     </select>
-                </label>
-                <noscript><button>Ubah</button></noscript>
-            </form>
-        </div>
-
-        <nav class="tabs" aria-label="Navigasi dashboard">
-            <?php foreach ($tabs as $key => $label): ?>
-                <a class="<?= $tab === $key ? 'active' : '' ?>"
-                   <?= $tab === $key ? 'aria-current="page"' : '' ?>
-                   href="?page=admin&amp;tab=<?= h($key) ?>&amp;days=<?= $days ?>"><?= h($label) ?></a>
-            <?php endforeach; ?>
-        </nav>
+                    <noscript><button class="button" type="submit">Terapkan</button></noscript>
+                </form>
+            </div>
 
         <?php if ($notice): ?>
             <p class="notice" role="status"><?= h($notice) ?></p>
@@ -80,92 +120,122 @@ $metricIcons = [
         <?php endif; ?>
 
         <?php if ($tab === 'overview'): ?>
-            <div class="kpis">
-                <?php foreach ($metrics as $metric): ?>
-                    <div class="panel kpi">
-                        <div class="kpi-top">
-                            <span class="kpi-icon" aria-hidden="true">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><?= $metricIcons[$metric['icon']] ?></svg>
-                            </span>
-                            <span class="kpi-period"><?= $days ?> hari</span>
+            <div class="overview-top">
+                <div class="kpis" aria-label="Ringkasan statistik">
+                    <?php foreach ($metrics as $metric): ?>
+                        <div class="panel kpi">
+                            <div class="kpi-top">
+                                <span class="kpi-icon" aria-hidden="true">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><?= $metricIcons[$metric['icon']] ?></svg>
+                                </span>
+                                <span class="kpi-period"><?= $days ?> hari</span>
+                            </div>
+                            <span class="kpi-label"><?= h($metric['label']) ?></span>
+                            <strong><?= h($metric['value']) ?></strong>
+                            <small>Dalam <?= $days ?> hari terakhir</small>
                         </div>
-                        <span class="kpi-label"><?= h($metric['label']) ?></span>
-                        <strong><?= h($metric['value']) ?></strong>
-                        <small>Dalam <?= $days ?> hari terakhir</small>
+                    <?php endforeach; ?>
+                </div>
+
+                <section class="panel chart-panel" aria-labelledby="activity-chart-title">
+                    <div class="panel-heading">
+                        <div>
+                            <p class="panel-eyebrow">PERFORMA</p>
+                            <h2 id="activity-chart-title">Aktivitas Harian</h2>
+                            <p>Kunjungan dan klik selama <?= $days ?> hari terakhir</p>
+                        </div>
+                        <span class="period-badge"><?= $days ?> hari</span>
                     </div>
-                <?php endforeach; ?>
+                    <div class="chart-legend" aria-label="Legenda grafik"><span><i class="legend-views"></i>Kunjungan</span><span><i class="legend-clicks"></i>Klik</span></div>
+                    <div class="activity-chart" role="img" aria-label="Grafik kunjungan dan klik harian selama <?= $days ?> hari. Rincian tersedia pada tabel di bawah grafik.">
+                        <div class="chart-scale" aria-hidden="true"><?php foreach ($chart['scale'] as $tick): ?><span><?= h($tick) ?></span><?php endforeach; ?></div>
+                        <div class="chart-plot">
+                            <div class="chart-lines" aria-hidden="true"></div>
+                            <svg viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true" focusable="false">
+                                <defs><linearGradient id="activity-fill" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#58b8f5" stop-opacity=".28"/><stop offset="100%" stop-color="#58b8f5" stop-opacity=".02"/></linearGradient></defs>
+                                <?php if ($chart['area'] !== ''): ?><polygon points="<?= h($chart['area']) ?>" fill="url(#activity-fill)"/><?php endif; ?>
+                                <?php if ($chart['views'] !== ''): ?><polyline points="<?= h($chart['views']) ?>" fill="none" stroke="#1995ed" stroke-width="2.5" vector-effect="non-scaling-stroke" stroke-linecap="round" stroke-linejoin="round"/><?php endif; ?>
+                                <?php if ($chart['clicks'] !== ''): ?><polyline points="<?= h($chart['clicks']) ?>" fill="none" stroke="#62bbad" stroke-width="2" vector-effect="non-scaling-stroke" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="5 4"/><?php endif; ?>
+                            </svg>
+                            <?php if (!$chart['has_data']): ?><span class="chart-empty">Belum ada aktivitas pada periode ini.</span><?php endif; ?>
+                        </div>
+                    </div>
+                    <div class="chart-labels" aria-hidden="true"><?php foreach ($chart['labels'] as $dateLabel): ?><span style="left: <?= h($dateLabel['position']) ?>%"><?= h($dateLabel['text']) ?></span><?php endforeach; ?></div>
+                    <details class="chart-details">
+                        <summary>Lihat rincian harian</summary>
+                        <div class="table-wrap"><table><thead><tr><th>Tanggal (UTC)</th><th>Kunjungan</th><th>Klik</th></tr></thead><tbody>
+                            <?php foreach ($daily as $date => $point): ?><tr><td><?= h(date('d M Y', strtotime($date))) ?></td><td><?= h($point['views']) ?></td><td><?= h($point['clicks']) ?></td></tr><?php endforeach; ?>
+                        </tbody></table></div>
+                    </details>
+                </section>
             </div>
 
-            <div class="dash-grid">
-                <section class="panel">
-                    <h3>Aktivitas Harian</h3>
-                    <p>Kunjungan dan klik selama <?= $days ?> hari terakhir</p>
-                    <div class="daily-list">
-                        <?php foreach ($daily as $date => $point): ?>
-                            <div>
-                                <span><?= h(date('d M', strtotime($date))) ?></span>
-                                <span><?= $point['views'] ?> kunjungan</span>
-                                <span><?= $point['clicks'] ?> klik</span>
-                            </div>
+            <div class="overview-bottom">
+                <section class="panel device-panel">
+                    <p class="panel-eyebrow">AUDIENS</p>
+                    <h2>Perangkat Pengunjung</h2>
+                    <p>Berdasarkan interaksi yang tercatat</p>
+                    <div class="device-ring" style="--device-percent: <?= $mobilePercent ?>%;" role="img" aria-label="<?= $deviceTotal ? $mobilePercent . '% interaksi menggunakan perangkat mobile' : 'Belum ada data perangkat' ?>">
+                        <div><strong><?= $deviceTotal ? $mobilePercent . '%' : '—' ?></strong><span>Mobile</span></div>
+                    </div>
+                    <?php if (!$devices): ?><p class="empty-message">Belum ada data perangkat.</p><?php endif; ?>
+                    <div class="device-list">
+                        <?php foreach ($devices as $name => $count): ?>
+                            <div><span><i class="<?= $name === 'Mobile' ? 'dot-mobile' : 'dot-other' ?>"></i><?= h($name) ?></span><strong><?= h($count) ?></strong></div>
                         <?php endforeach; ?>
                     </div>
                 </section>
-                <section class="panel">
-                    <h3>Perangkat Pengunjung</h3>
-                    <?php if (!$devices): ?>
-                        <p>Belum ada data.</p>
-                    <?php endif; ?>
-                    <?php foreach ($devices as $name => $count): ?>
-                        <div class="stat-row"><span><?= h($name) ?></span><strong><?= $count ?></strong></div>
-                    <?php endforeach; ?>
-                    <h3>Browser teratas</h3>
-                    <?php foreach ($browsers as $name => $count): ?>
-                        <span class="badge"><?= h($name) ?> · <?= $count ?></span>
-                    <?php endforeach; ?>
-                </section>
-            </div>
 
-            <div class="dash-grid">
-                <section class="panel">
-                    <h3>Performa Tautan</h3>
+                <section class="panel performance-panel">
+                    <p class="panel-eyebrow">TAUTAN</p>
+                    <h2>Performa Tautan</h2>
+                    <p>Jumlah klik pada setiap tautan</p>
                     <?php foreach ($allLinks as $link): ?>
                         <div class="stat-row">
                             <?= icon($link['icon']) ?>
                             <span><?= h($link['title']) ?></span>
-                            <strong><?= $linkClicks[$link['key']] ?? 0 ?> klik</strong>
+                            <strong><?= h($linkClicks[$link['key']] ?? 0) ?> <small>klik</small></strong>
                         </div>
                     <?php endforeach; ?>
+                    <?php if (!$allLinks): ?><p class="empty-message">Belum ada tautan.</p><?php endif; ?>
+                    <a class="panel-link" href="?page=admin&amp;tab=links&amp;days=<?= $days ?>">Kelola tautan <span aria-hidden="true">→</span></a>
                 </section>
-                <section class="panel">
-                    <h3>Aktivitas Terbaru</h3>
-                    <?php foreach (array_slice($events, 0, 6) as $event): ?>
-                        <div class="stat-row">
-                            <span>
-                                <?= h($event['target_label'] ?? 'Halaman publik') ?>
-                                <small><?= h($event['device']) ?> · <?= h($event['event_type']) ?></small>
-                            </span>
-                            <small><?= h(date('d M H:i', strtotime($event['created_at']))) ?> UTC</small>
-                        </div>
-                    <?php endforeach; ?>
-                    <?php if (!$events): ?><p>Belum ada aktivitas.</p><?php endif; ?>
-                </section>
+
+                <div class="overview-secondary">
+                    <section class="panel recent-panel">
+                        <div class="panel-heading"><div><p class="panel-eyebrow">AKTIVITAS</p><h2>Aktivitas Terbaru</h2></div><a class="panel-link" href="?page=admin&amp;tab=activity&amp;days=<?= $days ?>">Lihat semua <span aria-hidden="true">→</span></a></div>
+                        <?php foreach (array_slice($events, 0, 4) as $event): ?>
+                            <div class="stat-row"><span><?= h($event['target_label'] ?? 'Halaman publik') ?><small><?= h($event['device']) ?> · <?= h($event['event_type']) ?></small></span><small><?= h(date('d M H:i', strtotime($event['created_at']))) ?> UTC</small></div>
+                        <?php endforeach; ?>
+                        <?php if (!$events): ?><p class="empty-message">Belum ada aktivitas.</p><?php endif; ?>
+                    </section>
+                    <section class="panel browser-panel">
+                        <p class="panel-eyebrow">AUDIENS</p>
+                        <h2>Browser Teratas</h2>
+                        <?php foreach (array_slice($browsers, 0, 4, true) as $name => $count): ?>
+                            <?php $browserPercent = $browserTotal > 0 ? (int) round($count * 100 / $browserTotal) : 0; ?>
+                            <div class="browser-row"><div><span><?= h($name) ?></span><strong><?= h($count) ?></strong></div><div class="browser-track" aria-hidden="true"><span style="width: <?= $browserPercent ?>%"></span></div></div>
+                        <?php endforeach; ?>
+                        <?php if (!$browsers): ?><p class="empty-message">Belum ada data browser.</p><?php endif; ?>
+                    </section>
+                </div>
             </div>
 
         <?php elseif ($tab === 'links'): ?>
             <section class="panel">
-                <h3>Tambah Tautan Baru</h3>
+                <h2>Tambah Tautan Baru</h2>
                 <form method="post" class="add-form">
                     <?php token_input(); ?>
                     <input type="hidden" name="action" value="add">
-                    <input name="title" placeholder="Nama tautan" maxlength="80" required>
-                    <input name="url" placeholder="https://contoh.com" required>
-                    <select name="icon"><?php icon_options(); ?></select>
+                    <input name="title" aria-label="Nama tautan" placeholder="Nama tautan" maxlength="80" required>
+                    <input name="url" aria-label="URL tautan" placeholder="https://contoh.com" required>
+                    <select name="icon" aria-label="Ikon tautan"><?php icon_options(); ?></select>
                     <button class="button primary">Tambah</button>
                 </form>
             </section>
 
             <section class="panel">
-                <h3>Tautan Publik</h3>
+                <h2>Tautan Publik</h2>
                 <?php foreach ($allLinks as $link): ?>
                     <div class="editor">
                         <form method="post" class="edit-form">
@@ -204,7 +274,7 @@ $metricIcons = [
 
         <?php else: ?>
             <section class="panel">
-                <h3>Log Aktivitas Pengunjung</h3>
+                <h2>Log Aktivitas Pengunjung</h2>
                 <p>50 event terbaru dalam <?= $days ?> hari terakhir</p>
                 <div class="table-wrap">
                     <table>
@@ -240,7 +310,8 @@ $metricIcons = [
             </form>
         </div>
         <footer class="admin-footer"><span>© SAIMED <?= date('Y') ?></span><span>All Rights Reserved</span></footer>
-    </main>
+        </main>
+    </div>
 </div>
 
 <?php require __DIR__ . '/../includes/footer.php'; ?>
