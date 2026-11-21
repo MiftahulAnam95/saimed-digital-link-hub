@@ -21,13 +21,14 @@ if (is_string($token) && $token !== '') {
         if (!class_exists(\Firebase\JWT\JWT::class)) {
             throw new RuntimeException('Dependensi SSO belum terpasang.');
         }
-        $identity = sso_authenticate(sso_db(), $token, sso_app_url());
+        $ssoDatabase = sso_db();
+        $identity = sso_authenticate($ssoDatabase, $token, sso_app_url());
         $tokenHash = hash('sha256', $token);
         $timedOut = $identity && (
             (isset($_SESSION['sso_timed_out']) && hash_equals($_SESSION['sso_timed_out'], $tokenHash))
             || (isset($_SESSION['sso_token_hash'], $_SESSION['sso_last_activity'])
                 && hash_equals($_SESSION['sso_token_hash'], $tokenHash)
-                && time() - $_SESSION['sso_last_activity'] > 1800)
+                && time() - $_SESSION['sso_last_activity'] >= 1800)
         );
         if ($timedOut) {
             // Token lama tetap diblokir sampai SSO menerbitkan token baru.
@@ -53,6 +54,8 @@ if (is_string($token) && $token !== '') {
             $_SESSION['sso_token_hash'] = $tokenHash;
             $_SESSION['sso_last_activity'] = time();
             $loggedIn = true;
+            $profilePhotoUrl = sso_profile_photo_url($ssoDatabase, $identity['id']);
+            $sessionRemaining = max(0, min($_SESSION['sso_last_activity'] + 1800, $identity['expires_at']) - time());
         }
     } catch (Throwable $e) {
         error_log('SAIMED SSO: ' . $e->getMessage());

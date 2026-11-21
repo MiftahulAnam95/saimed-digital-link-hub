@@ -4,6 +4,11 @@ $admin_page = true;
 require __DIR__ . '/../includes/header.php';
 require_once __DIR__ . '/../includes/dashboard-chart.php';
 $chart = dashboard_chart($daily);
+$adminName = trim((string) ($identity['name'] ?? '')) ?: 'Super Admin';
+$sessionRemaining = max(0, (int) ($sessionRemaining ?? 0));
+$profilePhotoUrl = $profilePhotoUrl ?? null;
+$dashboardScript = __DIR__ . '/../assets/dashboard-session.js';
+$dashboardScriptVersion = is_readable($dashboardScript) ? substr(hash_file('sha256', $dashboardScript), 0, 12) : '';
 $deviceTotal = array_sum($devices);
 $mobileCount = (int) ($devices['Mobile'] ?? 0);
 $mobilePercent = $deviceTotal > 0 ? (int) round($mobileCount * 100 / $deviceTotal) : 0;
@@ -73,6 +78,20 @@ $metricIcons = [
             <div class="dash-breadcrumb">
                 <span>SAIMED DIGITAL LINK HUB</span>
                 <strong>Dashboard <span aria-hidden="true">/</span> <?= h($tabs[$tab]) ?></strong>
+            </div>
+            <div class="dash-account" aria-label="Informasi akun">
+                <div class="session-info" title="Perkiraan berdasarkan aktivitas pada tab ini dan masa berlaku token SSO">
+                    <span>Sisa sesi</span>
+                    <strong class="session-timer" data-remaining="<?= $sessionRemaining ?>"><?= sprintf('%02d:%02d', intdiv($sessionRemaining, 60), $sessionRemaining % 60) ?></strong>
+                    <a class="session-expired" href="?page=admin&amp;tab=<?= h($tab) ?>&amp;days=<?= $days ?>" hidden>Periksa sesi</a>
+                </div>
+                <div class="account-profile">
+                    <div class="account-avatar" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="12" cy="8" r="3.5"/><path d="M5 20a7 7 0 0 1 14 0"/></svg>
+                        <?php if ($profilePhotoUrl): ?><img src="<?= h($profilePhotoUrl) ?>" alt="" referrerpolicy="no-referrer"><?php endif; ?>
+                    </div>
+                    <span class="account-copy"><strong title="<?= h($adminName) ?>"><?= h($adminName) ?></strong><small>Super Admin</small></span>
+                </div>
             </div>
             <div class="dash-actions">
                 <a class="view-site" href="./" target="_blank" rel="noopener" aria-label="Lihat halaman publik (terbuka di tab baru)">
@@ -314,4 +333,5 @@ $metricIcons = [
     </div>
 </div>
 
+<script src="assets/dashboard-session.js?v=<?= h($dashboardScriptVersion) ?>" defer></script>
 <?php require __DIR__ . '/../includes/footer.php'; ?>

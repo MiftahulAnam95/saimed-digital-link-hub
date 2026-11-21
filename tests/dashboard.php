@@ -27,6 +27,9 @@ $events = [];
 $demoCount = 0;
 $notice = '';
 $dbError = false;
+$identity = ['name' => '<img src=x onerror=alert(1)>'];
+$profilePhotoUrl = 'https://example.test/avatar.png?a=1&b=2';
+$sessionRemaining = 185;
 
 foreach (['overview' => 'Ringkasan', 'links' => 'Kelola Tautan', 'activity' => 'Aktivitas'] as $tab => $label) {
     ob_start();
@@ -40,6 +43,10 @@ foreach (['overview' => 'Ringkasan', 'links' => 'Kelola Tautan', 'activity' => '
     expect_dashboard(str_contains($html, 'name="action" value="logout"'), 'Aksi logout harus tetap tersedia');
     expect_dashboard(str_contains($html, 'name="csrf" value="test-csrf"'), 'Form harus memiliki token CSRF');
     expect_dashboard(str_contains($html, 'name="days"'), 'Pemilihan periode harus tetap tersedia');
+    expect_dashboard(str_contains($html, 'Sisa sesi') && str_contains($html, '03:05'), 'Sisa sesi harus tampil');
+    expect_dashboard(str_contains($html, '&lt;img src=x onerror=alert(1)&gt;'), 'Nama user harus di-escape');
+    expect_dashboard(str_contains($html, 'https://example.test/avatar.png?a=1&amp;b=2'), 'URL foto profil harus di-escape');
+    expect_dashboard(str_contains($html, 'assets/dashboard-session.js'), 'Timer harus dimuat');
     expect_dashboard(!str_contains($html, '<script>alert(1)</script>'), 'Data tautan tidak boleh menjadi HTML');
     if ($tab === 'overview') {
         expect_dashboard(str_contains($html, 'Aktivitas Harian'), 'Grafik aktivitas harus tersedia');
