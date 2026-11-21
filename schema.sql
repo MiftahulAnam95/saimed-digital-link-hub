@@ -26,6 +26,7 @@ CREATE TABLE IF NOT EXISTS analytics_events (
     device VARCHAR(30) NOT NULL DEFAULT 'Desktop',
     browser VARCHAR(30) NOT NULL DEFAULT 'Lainnya',
     os VARCHAR(30) NOT NULL DEFAULT 'Lainnya',
+    -- Disimpan untuk kompatibilitas dan menyaring data contoh dari versi lama.
     is_demo TINYINT(1) NOT NULL DEFAULT 0,
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     INDEX analytics_events_created_at_idx (created_at),

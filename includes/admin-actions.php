@@ -35,6 +35,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         header('Location: ' . $logoutUrl, true, 303);
         exit();
     }
+    if (!in_array($action, ['save', 'add', 'delete'], true)) {
+        $_SESSION['notice'] = 'Tindakan tidak dikenal.';
+        redirect_admin($tab);
+    }
     try {
         $db = db();
         if ($action === 'save' || $action === 'add') {
@@ -107,53 +111,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $stmt = $db->prepare('DELETE FROM links WHERE id=:id');
             $stmt->execute(['id' => $id]);
             $_SESSION['notice'] = 'Tautan berhasil dihapus.';
-        } elseif ($action === 'demo') {
-            $db->beginTransaction();
-            $db->exec('DELETE FROM analytics_events WHERE is_demo = true');
-            $all = $db
-                ->query('SELECT id, `key`, title FROM links ORDER BY sort_order, id')
-                ->fetchAll();
-            $stmt = $db->prepare(
-                "INSERT INTO analytics_events
-                 (event_type, link_id, link_key, target_label, visitor_id, path, device, browser, os, is_demo, created_at)
-                 VALUES (:event, :id, :key, :label, :visitor, '/', :device, :browser, :os, true, :created)",
-            );
-            $count = 0;
-            for ($day = 29; $day >= 0 && count($all) > 0; $day--) {
-                for ($i = 0; $i < 14 + (($day * 7) % 21); $i++) {
-                    $date =
-                        gmdate('Y-m-d', strtotime("-$day days")) .
-                        sprintf(
-                            ' %02d:%02d:00',
-                            8 + (($i * 3) % 12),
-                            ($i * 17) % 60,
-                        );
-                    $data = [
-                        'event' => 'view',
-                        'id' => null,
-                        'key' => null,
-                        'label' => 'Halaman publik',
-                        'visitor' => "demo-$day-$i",
-                        'device' => $i % 3 ? 'Mobile' : 'Desktop',
-                        'browser' => $i % 4 ? 'Chrome' : 'Safari',
-                        'os' => $i % 3 ? 'Android' : 'Windows',
-                        'created' => $date,
-                    ];
-                    $stmt->execute($data);
-                    $count++;
-                    if ($i % 3 === 0) {
-                        $link = $all[($day + $i) % count($all)];
-                        $data['event'] = 'link_click';
-                        $data['id'] = $link['id'];
-                        $data['key'] = $link['key'];
-                        $data['label'] = $link['title'];
-                        $stmt->execute($data);
-                        $count++;
-                    }
-                }
-            }
-            $db->commit();
-            $_SESSION['notice'] = "$count event data contoh berhasil dimuat.";
         } else {
             throw new InvalidArgumentException('Tindakan tidak dikenal.');
         }

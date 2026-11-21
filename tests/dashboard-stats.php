@@ -7,13 +7,16 @@ function boolval_db($value): bool { return $value === true || $value === 1 || $v
 function links(bool $active = false): array { return [['key' => 'shopee', 'title' => 'Shopee', 'icon' => 'shopee']]; }
 class StatsDatabase {
     public function __construct(public array $events) {}
-    public function prepare(string $sql): StatsStatement { return new StatsStatement($this->events, $sql); }
+    public function prepare(string $sql): StatsStatement {
+        expect_stats(str_contains($sql, 'is_demo = 0'), 'Semua query statistik harus mengecualikan data contoh');
+        return new StatsStatement($this->events, $sql);
+    }
 }
 class StatsStatement {
     private array $results = [];
     public function __construct(private array $events, private string $sql) {}
     public function execute(array $params): void {
-        $filtered = array_values(array_filter($this->events, static fn($e) => $e['created_at'] < $params['end'] && (!isset($params['start']) || $e['created_at'] >= $params['start'])));
+        $filtered = array_values(array_filter($this->events, static fn($e) => !$e['is_demo'] && $e['created_at'] < $params['end'] && (!isset($params['start']) || $e['created_at'] >= $params['start'])));
         if (str_contains($this->sql, 'GROUP BY')) {
             $counts = [];
             foreach ($filtered as $event) $counts[$event['event_type']] = ($counts[$event['event_type']] ?? 0) + 1;
@@ -29,20 +32,22 @@ function event_at(int $daysAgo, string $type, ?string $key, string $label, bool 
 }
 $testDb = new StatsDatabase([
     event_at(0, 'view', null, 'Halaman'), event_at(1, 'link_click', 'shopee', 'Shopee'),
-    event_at(2, 'social_click', 'instagram', 'Instagram', true), event_at(3, 'link_action', 'shopee', 'Salin'),
-    event_at(8, 'view', null, 'Halaman'), event_at(8, 'link_click', 'shopee', 'Shopee'),
+    event_at(2, 'social_click', 'instagram', 'Instagram'), event_at(1, 'link_click', 'demo-link', 'Tautan contoh', true), event_at(3, 'link_action', 'shopee', 'Salin'),
+    event_at(8, 'view', null, 'Halaman'), event_at(8, 'link_click', 'shopee', 'Shopee'), event_at(8, 'view', null, 'Kunjungan contoh', true),
     event_at(100, 'link_click', 'deleted', 'Tautan lama'), event_at(-2, 'view', null, 'Masa depan'),
 ]);
 function stats_for(string $value): array {
     $_GET = ['days' => $value];
     require __DIR__ . '/../includes/admin-stats.php';
-    return compact('days', 'views', 'clicks', 'previousViews', 'previousClicks', 'performance', 'topLink', 'demoCount', 'chartDays', 'daily');
+    return compact('days', 'views', 'clicks', 'previousViews', 'previousClicks', 'performance', 'topLink', 'chartDays', 'daily', 'events', 'devices', 'browsers');
 }
 $seven = stats_for('7');
 expect_stats($seven['views'] === 1 && $seven['clicks'] === 2, 'Hanya event dalam periode boleh dihitung');
 expect_stats($seven['previousViews'] === 1 && $seven['previousClicks'] === 1, 'Periode sebelumnya salah');
 expect_stats($seven['performance']['shopee']['count'] === 1 && $seven['performance']['instagram']['count'] === 1, 'Klik sosial dan tautan harus masuk laporan');
-expect_stats($seven['demoCount'] === 1 && $seven['topLink']['count'] === 1, 'Insight dan data contoh salah');
+expect_stats($seven['topLink']['count'] === 1 && !isset($seven['performance']['demo-link']), 'Insight tidak boleh memasukkan data contoh');
+expect_stats(count($seven['events']) === 4 && $seven['devices']['Mobile'] === 3 && $seven['browsers']['Chrome'] === 3, 'Aktivitas dan audiens tidak boleh memasukkan data contoh');
+expect_stats(array_sum(array_column($seven['daily'], 'clicks')) === 2, 'Grafik tidak boleh memasukkan data contoh');
 $all = stats_for('all');
 expect_stats($all['views'] === 2 && $all['clicks'] === 4, 'Semua waktu harus mengecualikan masa depan');
 expect_stats($all['chartDays'] === 30 && count($all['daily']) === 30, 'Grafik semua waktu harus memakai 30 hari terakhir');
@@ -50,4 +55,7 @@ expect_stats($all['performance']['deleted']['count'] === 1, 'Klik tautan yang di
 expect_stats($all['previousViews'] === 0 && $all['previousClicks'] === 0, 'Semua waktu tidak memiliki periode sebelumnya');
 $ninety = stats_for('90');
 expect_stats($ninety['clicks'] === 3 && $ninety['chartDays'] === 90, 'Periode 90 hari salah');
+$testDb = new StatsDatabase([event_at(0, 'view', null, 'Contoh saja', true)]);
+$onlyDemo = stats_for('7');
+expect_stats($onlyDemo['views'] === 0 && $onlyDemo['clicks'] === 0 && !$onlyDemo['events'], 'Database yang hanya berisi data contoh harus menampilkan kondisi kosong');
 echo "Tes statistik dashboard berhasil.\n";

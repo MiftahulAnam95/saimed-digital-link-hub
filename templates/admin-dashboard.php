@@ -155,7 +155,6 @@ $metricIcons = [
             <p class="notice error">Database tidak tersedia. Periksa konfigurasi MySQL dan jalankan schema.sql.</p>
         <?php endif; ?>
 
-        <?php if ($demoCount > 0): ?><p class="analytics-demo-note">Periode ini mencakup <?= h($demoCount) ?> aktivitas contoh.</p><?php endif; ?>
         <?php if ($tab === 'overview'): ?>
             <div class="overview-top">
                 <div class="kpis" aria-label="Ringkasan statistik">
@@ -343,7 +342,7 @@ $metricIcons = [
                             <?php foreach (array_slice($events, 0, 50) as $event): ?>
                                 <tr>
                                     <td><?= h(date('d M Y H:i', strtotime($event['created_at']))) ?></td>
-                                    <td><?= h($event['event_type']) ?><?= boolval_db($event['is_demo']) ? ' (contoh)' : '' ?></td>
+                                    <td><?= h($event['event_type']) ?></td>
                                     <td><?= h($event['target_label'] ?? 'Halaman publik') ?></td>
                                     <td><?= h($event['device']) ?></td>
                                     <td><?= h(substr($event['visitor_id'], 0, 20)) ?></td>

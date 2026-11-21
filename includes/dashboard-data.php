@@ -37,7 +37,6 @@ function dashboard_csv_row(array $event): array
     $row = [
         $event['created_at'] ?? '', $event['event_type'] ?? '',
         $event['target_label'] ?? '', $event['device'] ?? '',
-        boolval_db($event['is_demo'] ?? false) ? 'Ya' : 'Tidak',
     ];
     return array_map('dashboard_csv_cell', $row);
 }

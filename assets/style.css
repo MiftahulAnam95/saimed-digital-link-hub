@@ -919,15 +919,6 @@ td {
 th {
   color: #789087;
 }
-.demo {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 15px;
-}
-.demo p {
-  margin-bottom: 0;
-}
 @media (max-width: 850px) {
   .kpis {
     grid-template-columns: repeat(2, 1fr);
@@ -980,10 +971,6 @@ th {
   }
   .edit-form {
     grid-template-columns: 1fr 1fr;
-  }
-  .demo {
-    align-items: flex-start;
-    flex-direction: column;
   }
 }
 
