@@ -26,7 +26,7 @@ header('Cache-Control: no-store, private');
 header('X-Content-Type-Options: nosniff');
 $out = fopen('php://output', 'wb');
 fwrite($out, "\xEF\xBB\xBFsep=;\r\n");
-fputcsv($out, ['Waktu (UTC)', 'Aktivitas', 'Nama tautan', 'Perangkat'], ';', '"', '');
+fputcsv($out, ['Waktu (WIB)', 'Aktivitas', 'Nama tautan', 'Perangkat'], ';', '"', '');
 while ($event = $stmt->fetch()) {
     fputcsv($out, dashboard_csv_row($event), ';', '"', '');
 }

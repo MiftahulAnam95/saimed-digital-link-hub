@@ -17,11 +17,11 @@
   function show(index) {
     selected = Math.max(0, Math.min(points.length - 1, index));
     const point = points[selected];
-    date.textContent = `${point.date} (UTC)`;
+    date.textContent = `${point.date} (WIB)`;
     views.textContent = number.format(point.views);
     clicks.textContent = number.format(point.clicks);
     plot.setAttribute('aria-valuenow', String(selected + 1));
-    plot.setAttribute('aria-valuetext', `${point.date}: ${point.views} kunjungan, ${point.clicks} klik`);
+    plot.setAttribute('aria-valuetext', `${point.date} WIB: ${point.views} kunjungan, ${point.clicks} klik`);
     [crosshair, viewsPoint, clicksPoint, tooltip].forEach(element => { element.hidden = false; });
     crosshair.style.left = `${point.x}%`;
     for (const [element, y] of [[viewsPoint, point.viewY], [clicksPoint, point.clickY]]) {

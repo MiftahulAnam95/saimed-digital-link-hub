@@ -114,4 +114,18 @@ ob_start();
 require __DIR__ . '/../templates/admin-dashboard.php';
 $emptyHtml = ob_get_clean();
 expect_dashboard(str_contains($emptyHtml, 'device-ring--empty') && str_contains($emptyHtml, 'Belum ada data perangkat'), 'Data kosong harus memakai ring netral');
+// Tampilan aktivitas dan tanggal grafik memakai WIB, termasuk saat melewati tahun.
+$events = [['target_label' => 'Halaman publik', 'device' => 'Mobile', 'event_type' => 'view', 'created_at' => '2025-12-31 17:00:00', 'visitor_id' => 'visitor']];
+$daily = ['2026-01-01' => ['views' => 1, 'clicks' => 0]];
+$tab = 'overview';
+ob_start();
+require __DIR__ . '/../templates/admin-dashboard.php';
+$wibOverview = ob_get_clean();
+expect_dashboard(str_contains($wibOverview, '01 Jan 00:00 WIB'), 'Aktivitas terbaru harus dikonversi ke WIB');
+expect_dashboard(str_contains($wibOverview, 'Tanggal (WIB)') && str_contains($wibOverview, '01 Jan 2026'), 'Tanggal grafik harus memakai kalender WIB');
+$tab = 'activity';
+ob_start();
+require __DIR__ . '/../templates/admin-dashboard.php';
+$wibActivity = ob_get_clean();
+expect_dashboard(str_contains($wibActivity, 'Waktu (WIB)') && str_contains($wibActivity, '01 Jan 2026 00:00'), 'Log aktivitas harus dikonversi ke WIB');
 echo "Tes template dashboard berhasil.\n";

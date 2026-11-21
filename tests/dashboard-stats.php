@@ -28,7 +28,7 @@ class StatsStatement {
 }
 function db(): StatsDatabase { global $testDb; return $testDb; }
 function event_at(int $daysAgo, string $type, ?string $key, string $label, bool $demo = false): array {
-    return ['created_at' => gmdate('Y-m-d 12:00:00', strtotime("-$daysAgo days")), 'event_type' => $type, 'link_key' => $key, 'target_label' => $label, 'device' => 'Mobile', 'browser' => 'Chrome', 'visitor_id' => '1', 'is_demo' => $demo];
+    return ['created_at' => gmdate('Y-m-d H:i:s', strtotime(gmdate('Y-m-d', time() + 7 * 3600) . ' 05:00:00 UTC') - $daysAgo * 86400), 'event_type' => $type, 'link_key' => $key, 'target_label' => $label, 'device' => 'Mobile', 'browser' => 'Chrome', 'visitor_id' => '1', 'is_demo' => $demo];
 }
 $testDb = new StatsDatabase([
     event_at(0, 'view', null, 'Halaman'), event_at(1, 'link_click', 'shopee', 'Shopee'),
@@ -55,6 +55,21 @@ expect_stats($all['performance']['deleted']['count'] === 1, 'Klik tautan yang di
 expect_stats($all['previousViews'] === 0 && $all['previousClicks'] === 0, 'Semua waktu tidak memiliki periode sebelumnya');
 $ninety = stats_for('90');
 expect_stats($ninety['clicks'] === 3 && $ninety['chartDays'] === 90, 'Periode 90 hari salah');
+// Peristiwa pada tengah malam WIB harus masuk hari dan periode yang benar.
+require_once __DIR__ . '/../includes/dashboard-data.php';
+$period = dashboard_period('7');
+$start = strtotime($period['start'] . ' UTC');
+$todayStart = strtotime($period['today'] . ' 00:00:00 Asia/Jakarta');
+$first = event_at(0, 'view', null, 'boundary');
+$beforePeriod = $first; $beforePeriod['created_at'] = gmdate('Y-m-d H:i:s', $start - 1);
+$atPeriod = $first; $atPeriod['created_at'] = gmdate('Y-m-d H:i:s', $start);
+$beforeToday = $first; $beforeToday['created_at'] = gmdate('Y-m-d H:i:s', $todayStart - 1);
+$atToday = $first; $atToday['created_at'] = gmdate('Y-m-d H:i:s', $todayStart);
+$testDb = new StatsDatabase([$beforePeriod, $atPeriod, $beforeToday, $atToday]);
+$boundary = stats_for('7');
+$yesterday = (new DateTimeImmutable($period['today'], new DateTimeZone('Asia/Jakarta')))->modify('-1 day')->format('Y-m-d');
+expect_stats($boundary['views'] === 3 && $boundary['previousViews'] === 1, 'Batas periode WIB salah');
+expect_stats($boundary['daily'][$period['today']]['views'] === 1 && $boundary['daily'][$yesterday]['views'] === 1, 'Pengelompokan hari WIB salah');
 $testDb = new StatsDatabase([event_at(0, 'view', null, 'Contoh saja', true)]);
 $onlyDemo = stats_for('7');
 expect_stats($onlyDemo['views'] === 0 && $onlyDemo['clicks'] === 0 && !$onlyDemo['events'], 'Database yang hanya berisi data contoh harus menampilkan kondisi kosong');

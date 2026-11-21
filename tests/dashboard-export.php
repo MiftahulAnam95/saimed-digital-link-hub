@@ -32,8 +32,8 @@ register_shutdown_function(static function (): void {
     $header = fgetcsv($stream, 0, ';', '"', '');
     $row = fgetcsv($stream, 0, ';', '"', '');
     fclose($stream);
-    if ($header !== ['Waktu (UTC)', 'Aktivitas', 'Nama tautan', 'Perangkat']
-        || $row !== ['2026-01-01 12:00:00', 'link_click', "'=SUM(1;2)", 'Mobile']) {
+    if ($header !== ['Waktu (WIB)', 'Aktivitas', 'Nama tautan', 'Perangkat']
+        || $row !== ['2026-01-01 19:00:00', 'link_click', "'=SUM(1;2)", 'Mobile']) {
         throw new RuntimeException('Konten CSV atau perlindungan formula salah');
     }
     echo "Tes ekspor dashboard berhasil.\n";

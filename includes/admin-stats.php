@@ -45,11 +45,11 @@ $daily = [];
 foreach ($allLinks as $link) {
     $performance[$link['key']] = ['title' => $link['title'], 'icon' => $link['icon'], 'count' => 0];
 }
-for ($i = $chartDays - 1; $i >= 0; $i--) {
-    $daily[gmdate('Y-m-d', strtotime("-$i days"))] = ['views' => 0, 'clicks' => 0];
+foreach (dashboard_daily_dates($chartDays, $period['today']) as $date) {
+    $daily[$date] = ['views' => 0, 'clicks' => 0];
 }
 foreach ($events as $event) {
-    $date = gmdate('Y-m-d', strtotime($event['created_at']));
+    $date = dashboard_wib($event['created_at'], 'Y-m-d');
     $isView = $event['event_type'] === 'view';
     $isClick = in_array($event['event_type'], ['link_click', 'social_click'], true);
     if ($isView) $views++;

@@ -191,10 +191,10 @@ $metricIcons = [
                         <span class="period-badge"><?= $chartDays ?> hari</span>
                     </div>
                     <div class="chart-legend" aria-label="Legenda grafik"><span><i class="legend-views"></i>Kunjungan</span><span><i class="legend-clicks"></i>Klik</span></div>
-                    <p class="chart-help">Arahkan kursor atau sentuh grafik untuk melihat rincian.</p>
-                    <div class="activity-chart" role="group" aria-label="Grafik kunjungan dan klik harian selama <?= $chartDays ?> hari. Rincian tersedia pada tabel di bawah grafik.">
+                    <p class="chart-help">Arahkan kursor atau sentuh grafik untuk melihat rincian (WIB).</p>
+                    <div class="activity-chart" role="group" aria-label="Grafik kunjungan dan klik harian selama <?= $chartDays ?> hari berdasarkan WIB. Rincian tersedia pada tabel di bawah grafik.">
                         <div class="chart-scale" aria-hidden="true"><?php foreach ($chart['scale'] as $tick): ?><span><?= h($tick) ?></span><?php endforeach; ?></div>
-                        <div class="chart-plot"<?php if ($chart['points']): ?> role="slider" tabindex="0" aria-label="Data aktivitas harian. Gunakan tombol panah untuk memilih tanggal" aria-valuemin="1" aria-valuemax="<?= count($chart['points']) ?>" aria-valuenow="1" aria-valuetext="<?= h($chart['points'][0]['date']) ?>: <?= h($chart['points'][0]['views']) ?> kunjungan, <?= h($chart['points'][0]['clicks']) ?> klik" data-points="<?= h(json_encode($chart['points'], JSON_UNESCAPED_UNICODE | JSON_INVALID_UTF8_SUBSTITUTE)) ?>"<?php endif; ?>>
+                        <div class="chart-plot"<?php if ($chart['points']): ?> role="slider" tabindex="0" aria-label="Data aktivitas harian dalam WIB. Gunakan tombol panah untuk memilih tanggal" aria-valuemin="1" aria-valuemax="<?= count($chart['points']) ?>" aria-valuenow="1" aria-valuetext="<?= h($chart['points'][0]['date']) ?> WIB: <?= h($chart['points'][0]['views']) ?> kunjungan, <?= h($chart['points'][0]['clicks']) ?> klik" data-points="<?= h(json_encode($chart['points'], JSON_UNESCAPED_UNICODE | JSON_INVALID_UTF8_SUBSTITUTE)) ?>"<?php endif; ?>>
                             <div class="chart-lines" aria-hidden="true"></div>
                             <svg viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true" focusable="false">
                                 <defs><linearGradient id="activity-fill" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#58b8f5" stop-opacity=".28"/><stop offset="100%" stop-color="#58b8f5" stop-opacity=".02"/></linearGradient></defs>
@@ -214,8 +214,8 @@ $metricIcons = [
                     <div class="chart-labels" aria-hidden="true"><?php foreach ($chart['labels'] as $dateLabel): ?><span style="left: <?= h($dateLabel['position']) ?>%"><?= h($dateLabel['text']) ?></span><?php endforeach; ?></div>
                     <details class="chart-details">
                         <summary>Lihat rincian harian</summary>
-                        <div class="table-wrap"><table><thead><tr><th>Tanggal (UTC)</th><th>Kunjungan</th><th>Klik</th></tr></thead><tbody>
-                            <?php foreach ($daily as $date => $point): ?><tr><td><?= h(date('d M Y', strtotime($date))) ?></td><td><?= h($point['views']) ?></td><td><?= h($point['clicks']) ?></td></tr><?php endforeach; ?>
+                        <div class="table-wrap"><table><thead><tr><th>Tanggal (WIB)</th><th>Kunjungan</th><th>Klik</th></tr></thead><tbody>
+                            <?php foreach ($daily as $date => $point): ?><tr><td><?= h(gmdate('d M Y', strtotime($date . ' UTC'))) ?></td><td><?= h($point['views']) ?></td><td><?= h($point['clicks']) ?></td></tr><?php endforeach; ?>
                         </tbody></table></div>
                     </details>
                 </section>
@@ -260,7 +260,7 @@ $metricIcons = [
                     <section class="panel recent-panel">
                         <div class="panel-heading"><div><p class="panel-eyebrow">AKTIVITAS</p><h2>Aktivitas Terbaru</h2></div><a class="panel-link" href="?page=admin&amp;tab=activity&amp;days=<?= $days ?>">Lihat semua <span aria-hidden="true">→</span></a></div>
                         <?php foreach (array_slice($events, 0, 4) as $event): ?>
-                            <div class="stat-row"><span><?= h($event['target_label'] ?? 'Halaman publik') ?><small><?= h($event['device']) ?> · <?= h($event['event_type']) ?></small></span><small><?= h(date('d M H:i', strtotime($event['created_at']))) ?> UTC</small></div>
+                            <div class="stat-row"><span><?= h($event['target_label'] ?? 'Halaman publik') ?><small><?= h($event['device']) ?> · <?= h($event['event_type']) ?></small></span><small><?= h(dashboard_wib($event['created_at'], 'd M H:i')) ?> WIB</small></div>
                         <?php endforeach; ?>
                         <?php if (!$events): ?><p class="empty-message">Belum ada aktivitas.</p><?php endif; ?>
                     </section>
@@ -344,12 +344,12 @@ $metricIcons = [
                 <div class="table-wrap">
                     <table>
                         <thead>
-                            <tr><th>Waktu (UTC)</th><th>Aktivitas</th><th>Label</th><th>Perangkat</th><th>Pengunjung</th></tr>
+                            <tr><th>Waktu (WIB)</th><th>Aktivitas</th><th>Label</th><th>Perangkat</th><th>Pengunjung</th></tr>
                         </thead>
                         <tbody>
                             <?php foreach (array_slice($events, 0, 50) as $event): ?>
                                 <tr>
-                                    <td><?= h(date('d M Y H:i', strtotime($event['created_at']))) ?></td>
+                                    <td><?= h(dashboard_wib($event['created_at'], 'd M Y H:i')) ?></td>
                                     <td><?= h($event['event_type']) ?></td>
                                     <td><?= h($event['target_label'] ?? 'Halaman publik') ?></td>
                                     <td><?= h($event['device']) ?></td>
