@@ -81,4 +81,29 @@ foreach (['overview' => 'Ringkasan', 'links' => 'Kelola Tautan', 'activity' => '
         expect_dashboard(str_contains($html, 'Log Aktivitas Pengunjung'), 'Log aktivitas harus tersedia');
     }
 }
+// Warna dan proporsi ring harus tetap konsisten meski ada perangkat lain atau data kosong.
+$tab = 'overview';
+$devices = ['Mobile' => 3, 'Desktop' => 2, 'Tablet' => 4, 'TV' => 1];
+ob_start();
+require __DIR__ . '/../templates/admin-dashboard.php';
+$deviceHtml = ob_get_clean();
+expect_dashboard(str_contains($deviceHtml, '--mobile-end: 30.0000%; --desktop-end: 50.0000%; --tablet-end: 90.0000%;'), 'Segmen harus proporsional terhadap semua interaksi');
+foreach (['Mobile' => 'dot-mobile', 'Desktop' => 'dot-desktop', 'Tablet' => 'dot-tablet', 'TV' => 'dot-other'] as $name => $class) {
+    expect_dashboard(str_contains($deviceHtml, 'class="' . $class . '" aria-hidden="true"></i>' . $name), 'Legenda perangkat harus sesuai: ' . $name);
+}
+$devices = ['Desktop' => 1];
+ob_start();
+require __DIR__ . '/../templates/admin-dashboard.php';
+$desktopHtml = ob_get_clean();
+expect_dashboard(str_contains($desktopHtml, '--mobile-end: 0.0000%; --desktop-end: 100.0000%; --tablet-end: 100.0000%;'), 'Hanya desktop harus menghasilkan ring penuh biru');
+$devices = ['Tablet' => 1];
+ob_start();
+require __DIR__ . '/../templates/admin-dashboard.php';
+$tabletHtml = ob_get_clean();
+expect_dashboard(str_contains($tabletHtml, '--mobile-end: 0.0000%; --desktop-end: 0.0000%; --tablet-end: 100.0000%;'), 'Hanya tablet harus menghasilkan ring penuh ungu');
+$devices = [];
+ob_start();
+require __DIR__ . '/../templates/admin-dashboard.php';
+$emptyHtml = ob_get_clean();
+expect_dashboard(str_contains($emptyHtml, 'device-ring--empty') && str_contains($emptyHtml, 'Belum ada data perangkat'), 'Data kosong harus memakai ring netral');
 echo "Tes template dashboard berhasil.\n";

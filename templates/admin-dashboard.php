@@ -25,6 +25,12 @@ $chartScriptVersion = is_readable($chartScript) ? substr(hash_file('sha256', $ch
 $deviceTotal = array_sum($devices);
 $mobileCount = (int) ($devices['Mobile'] ?? 0);
 $mobilePercent = $deviceTotal > 0 ? (int) round($mobileCount * 100 / $deviceTotal) : 0;
+$desktopCount = (int) ($devices['Desktop'] ?? 0);
+$tabletCount = (int) ($devices['Tablet'] ?? 0);
+$mobileEnd = $deviceTotal > 0 ? number_format($mobileCount * 100 / $deviceTotal, 4, '.', '') : '0';
+$desktopEnd = $deviceTotal > 0 ? number_format(($mobileCount + $desktopCount) * 100 / $deviceTotal, 4, '.', '') : '0';
+$tabletEnd = $deviceTotal > 0 ? number_format(($mobileCount + $desktopCount + $tabletCount) * 100 / $deviceTotal, 4, '.', '') : '0';
+$deviceClasses = ['Mobile' => 'dot-mobile', 'Desktop' => 'dot-desktop', 'Tablet' => 'dot-tablet'];
 $browserTotal = array_sum($browsers);
 
 $tabs = [
@@ -218,13 +224,13 @@ $metricIcons = [
                     <p class="panel-eyebrow">AUDIENS</p>
                     <h2>Perangkat Pengunjung</h2>
                     <p>Berdasarkan interaksi yang tercatat</p>
-                    <div class="device-ring" style="--device-percent: <?= $mobilePercent ?>%;" role="img" aria-label="<?= $deviceTotal ? $mobilePercent . '% interaksi menggunakan perangkat mobile' : 'Belum ada data perangkat' ?>">
+                    <div class="device-ring<?= $deviceTotal ? '' : ' device-ring--empty' ?>" style="--mobile-end: <?= h($mobileEnd) ?>%; --desktop-end: <?= h($desktopEnd) ?>%; --tablet-end: <?= h($tabletEnd) ?>%;" role="img" aria-label="<?= $deviceTotal ? h($mobilePercent . '% interaksi menggunakan perangkat mobile') : 'Belum ada data perangkat' ?>">
                         <div><strong><?= $deviceTotal ? $mobilePercent . '%' : '—' ?></strong><span>Mobile</span></div>
                     </div>
                     <?php if (!$devices): ?><p class="empty-message">Belum ada data perangkat.</p><?php endif; ?>
                     <div class="device-list">
                         <?php foreach ($devices as $name => $count): ?>
-                            <div><span><i class="<?= $name === 'Mobile' ? 'dot-mobile' : 'dot-other' ?>"></i><?= h($name) ?></span><strong><?= h($count) ?></strong></div>
+                            <div><span><i class="<?= h($deviceClasses[$name] ?? 'dot-other') ?>" aria-hidden="true"></i><?= h($name) ?></span><strong><?= h($count) ?></strong></div>
                         <?php endforeach; ?>
                     </div>
                 </section>
