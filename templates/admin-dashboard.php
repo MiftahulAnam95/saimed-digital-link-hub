@@ -20,6 +20,8 @@ $sessionRemaining = max(0, (int) ($sessionRemaining ?? 0));
 $profilePhotoUrl = $profilePhotoUrl ?? null;
 $dashboardScript = __DIR__ . '/../assets/dashboard-session.js';
 $dashboardScriptVersion = is_readable($dashboardScript) ? substr(hash_file('sha256', $dashboardScript), 0, 12) : '';
+$chartScript = __DIR__ . '/../assets/dashboard-chart.js';
+$chartScriptVersion = is_readable($chartScript) ? substr(hash_file('sha256', $chartScript), 0, 12) : '';
 $deviceTotal = array_sum($devices);
 $mobileCount = (int) ($devices['Mobile'] ?? 0);
 $mobilePercent = $deviceTotal > 0 ? (int) round($mobileCount * 100 / $deviceTotal) : 0;
@@ -182,17 +184,24 @@ $metricIcons = [
                         <span class="period-badge"><?= $chartDays ?> hari</span>
                     </div>
                     <div class="chart-legend" aria-label="Legenda grafik"><span><i class="legend-views"></i>Kunjungan</span><span><i class="legend-clicks"></i>Klik</span></div>
-                    <div class="activity-chart" role="img" aria-label="Grafik kunjungan dan klik harian selama <?= $chartDays ?> hari. Rincian tersedia pada tabel di bawah grafik.">
+                    <p class="chart-help">Arahkan kursor atau sentuh grafik untuk melihat rincian.</p>
+                    <div class="activity-chart" role="group" aria-label="Grafik kunjungan dan klik harian selama <?= $chartDays ?> hari. Rincian tersedia pada tabel di bawah grafik.">
                         <div class="chart-scale" aria-hidden="true"><?php foreach ($chart['scale'] as $tick): ?><span><?= h($tick) ?></span><?php endforeach; ?></div>
-                        <div class="chart-plot">
+                        <div class="chart-plot"<?php if ($chart['points']): ?> role="slider" tabindex="0" aria-label="Data aktivitas harian. Gunakan tombol panah untuk memilih tanggal" aria-valuemin="1" aria-valuemax="<?= count($chart['points']) ?>" aria-valuenow="1" aria-valuetext="<?= h($chart['points'][0]['date']) ?>: <?= h($chart['points'][0]['views']) ?> kunjungan, <?= h($chart['points'][0]['clicks']) ?> klik" data-points="<?= h(json_encode($chart['points'], JSON_UNESCAPED_UNICODE | JSON_INVALID_UTF8_SUBSTITUTE)) ?>"<?php endif; ?>>
                             <div class="chart-lines" aria-hidden="true"></div>
                             <svg viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true" focusable="false">
                                 <defs><linearGradient id="activity-fill" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#58b8f5" stop-opacity=".28"/><stop offset="100%" stop-color="#58b8f5" stop-opacity=".02"/></linearGradient></defs>
-                                <?php if ($chart['area'] !== ''): ?><polygon points="<?= h($chart['area']) ?>" fill="url(#activity-fill)"/><?php endif; ?>
-                                <?php if ($chart['views'] !== ''): ?><polyline points="<?= h($chart['views']) ?>" fill="none" stroke="#1995ed" stroke-width="2.5" vector-effect="non-scaling-stroke" stroke-linecap="round" stroke-linejoin="round"/><?php endif; ?>
-                                <?php if ($chart['clicks'] !== ''): ?><polyline points="<?= h($chart['clicks']) ?>" fill="none" stroke="#62bbad" stroke-width="2" vector-effect="non-scaling-stroke" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="5 4"/><?php endif; ?>
+                                <?php if ($chart['area_path'] !== ''): ?><path d="<?= h($chart['area_path']) ?>" fill="url(#activity-fill)"/><?php endif; ?>
+                                <?php if ($chart['view_path'] !== ''): ?><path d="<?= h($chart['view_path']) ?>" fill="none" stroke="#1995ed" stroke-width="2.5" vector-effect="non-scaling-stroke" stroke-linecap="round" stroke-linejoin="round"/><?php endif; ?>
+                                <?php if ($chart['click_path'] !== ''): ?><path d="<?= h($chart['click_path']) ?>" fill="none" stroke="#62bbad" stroke-width="2" vector-effect="non-scaling-stroke" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="5 4"/><?php endif; ?>
                             </svg>
                             <?php if (!$chart['has_data']): ?><span class="chart-empty">Belum ada aktivitas pada rentang grafik.</span><?php endif; ?>
+                            <?php if ($chart['points']): ?>
+                                <div class="chart-crosshair" hidden aria-hidden="true"></div>
+                                <div class="chart-point chart-point-views" hidden aria-hidden="true"></div>
+                                <div class="chart-point chart-point-clicks" hidden aria-hidden="true"></div>
+                                <div class="chart-tooltip" hidden aria-hidden="true"><strong class="chart-tooltip-date"></strong><span><i class="legend-views"></i>Kunjungan <b class="chart-tooltip-views"></b></span><span><i class="legend-clicks"></i>Klik <b class="chart-tooltip-clicks"></b></span></div>
+                            <?php endif; ?>
                         </div>
                     </div>
                     <div class="chart-labels" aria-hidden="true"><?php foreach ($chart['labels'] as $dateLabel): ?><span style="left: <?= h($dateLabel['position']) ?>%"><?= h($dateLabel['text']) ?></span><?php endforeach; ?></div>
@@ -352,5 +361,6 @@ $metricIcons = [
     </div>
 </div>
 
+<?php if ($tab === 'overview'): ?><script src="assets/dashboard-chart.js?v=<?= h($chartScriptVersion) ?>" defer></script><?php endif; ?>
 <script src="assets/dashboard-session.js?v=<?= h($dashboardScriptVersion) ?>" defer></script>
 <?php require __DIR__ . '/../includes/footer.php'; ?>
