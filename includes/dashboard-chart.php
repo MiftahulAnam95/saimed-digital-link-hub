@@ -30,7 +30,7 @@ function dashboard_chart(array $daily): array
         $coordinate = static fn(float $number): string => number_format($number, 2, '.', '');
         $viewPoints[] = $coordinate($x) . ',' . $coordinate($viewY);
         $clickPoints[] = $coordinate($x) . ',' . $coordinate($clickY);
-        $time = strtotime($point['date']);
+        $time = strtotime($point['date'] . ' UTC');
         $points[] = [
             'x' => round($x, 2), 'viewY' => round($viewY, 2), 'clickY' => round($clickY, 2),
             'date' => $time === false ? $point['date'] : gmdate('d M Y', $time),
@@ -47,7 +47,7 @@ function dashboard_chart(array $daily): array
     }
     $labels = [];
     foreach (array_unique($labelIndexes) as $index) {
-        $time = strtotime($values[$index]['date']);
+        $time = strtotime($values[$index]['date'] . ' UTC');
         $labels[] = [
             'text' => $time === false ? '' : gmdate('d M', $time),
             'position' => $count > 1 ? round($index * 100 / ($count - 1), 2) : 50,

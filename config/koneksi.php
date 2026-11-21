@@ -66,7 +66,7 @@ function db(): PDO
         PDO::ATTR_EMULATE_PREPARES => false,
     ]);
 
-    // Semua waktu analytics disimpan dan dihitung sebagai UTC.
+    // Waktu analytics disimpan dalam UTC; dashboard menampilkannya sebagai WIB.
     $connection->exec("SET time_zone = '+00:00'");
 
     return $connection;
