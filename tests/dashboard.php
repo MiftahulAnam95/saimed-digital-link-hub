@@ -23,6 +23,13 @@ $daily = ['2026-01-01' => ['views' => 1, 'clicks' => 1]];
 $allLinks = fallback_links();
 $allLinks[0]['title'] = '<script>alert(1)</script>';
 $linkClicks = [];
+$performance = [
+    ['title' => '<tautan>', 'icon' => 'link', 'count' => 3],
+    ['title' => 'Instagram', 'icon' => 'instagram', 'count' => 2],
+];
+$topLink = $performance[0];
+$previousViews = 10;
+$previousClicks = 10;
 $events = [];
 $demoCount = 0;
 $notice = '';
@@ -55,6 +62,12 @@ foreach (['overview' => 'Ringkasan', 'links' => 'Kelola Tautan', 'activity' => '
         expect_dashboard(str_contains($html, 'Lihat rincian harian'), 'Tabel data grafik harus tersedia');
         expect_dashboard(str_contains($html, '100% interaksi menggunakan perangkat mobile'), 'Persentase perangkat harus sesuai data');
         expect_dashboard(str_contains($html, '<polyline'), 'Grafik harus memakai data harian');
+        expect_dashboard(str_contains($html, '+100,0% vs periode sebelumnya'), 'Tren kunjungan harus ditampilkan');
+        expect_dashboard(str_contains($html, '-50,0% vs periode sebelumnya'), 'Tren klik harus ditampilkan');
+        expect_dashboard(str_contains($html, '&lt;tautan&gt; paling diminati'), 'Insight dan escape nama tautan diperlukan');
+        expect_dashboard(str_contains($html, '60,0% kontribusi'), 'Kontribusi harus sesuai total klik');
+        expect_dashboard(str_contains($html, 'Ekspor CSV'), 'Ekspor harus tersedia');
+        expect_dashboard(str_contains($html, '90 hari terakhir') && str_contains($html, 'Semua waktu'), 'Periode tambahan harus tersedia');
     }
     if ($tab === 'links') {
         expect_dashboard(str_contains($html, 'name="action" value="add"'), 'Tambah tautan harus tersedia');

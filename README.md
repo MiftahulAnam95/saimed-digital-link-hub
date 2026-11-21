@@ -31,4 +31,10 @@ Jika kembali ke halaman admin dengan pesan sesi tidak valid, cari baris terbaru 
 
 ## Pengujian
 
-Jalankan `php tests/smoke.php`, `php tests/dashboard.php`, `php tests/dashboard-chart.php`, `php tests/sso.php`, `php tests/sso-profile.php`, `php tests/sso-diagnostics.php`, `php tests/sso-url.php`, `php tests/sso-return.php`, serta `php tests/sso-controller.php <skenario>` untuk setiap skenario `start`, `retry`, `returned`, dan `config`; periksa juga sintaks PHP. Tes SSO memerlukan dependensi Composer; tes URL memerlukan ekstensi OpenSSL.
+Jalankan `php tests/smoke.php`, `php tests/dashboard.php`, `php tests/dashboard-chart.php`, `php tests/dashboard-data.php`, `php tests/dashboard-stats.php`, `php tests/dashboard-export.php`, `php tests/sso.php`, `php tests/sso-profile.php`, `php tests/sso-diagnostics.php`, `php tests/sso-url.php`, `php tests/sso-return.php`, serta `php tests/sso-controller.php <skenario>` untuk setiap skenario `start`, `retry`, `returned`, dan `config`; periksa juga sintaks PHP. Tes SSO memerlukan dependensi Composer; tes URL memerlukan ekstensi OpenSSL.
+
+## Laporan analytics
+
+Dashboard menggunakan data dari MySQL, bukan data localStorage atau data contoh otomatis dari prototipe. Pilihan periode 7, 14, 30, 90 hari atau semua waktu dihitung berdasarkan hari kalender UTC. Perbandingan kunjungan dan klik memakai periode sebelumnya dengan panjang yang sama; jika periode sebelumnya nol atau memilih semua waktu, persentase tidak ditampilkan. Pada pilihan semua waktu, ringkasan dan ekspor mencakup seluruh data, sedangkan grafik harian menampilkan 30 hari terakhir agar tetap terbaca. Perangkat menghitung interaksi, bukan pengunjung unik. Kontribusi tautan membagi jumlah klik tautan dengan semua klik tautan dan sosial pada periode yang dipilih. Data contoh yang sudah ada tetap dihitung dan ditandai.
+
+Tombol **Perbarui** memuat ulang data dari server. **Ekspor CSV** hanya tersedia bagi Super Admin yang terautentikasi dan mengikuti periode terpilih. File menggunakan zona waktu UTC dan memuat waktu, jenis aktivitas, label, perangkat, dan penanda data contoh; nilai dibatasi agar tidak dieksekusi sebagai formula spreadsheet. Ekspor tidak menyertakan ID pengunjung atau user agent.
