@@ -81,6 +81,11 @@ foreach (['overview' => 'Ringkasan', 'links' => 'Kelola Tautan', 'activity' => '
         expect_dashboard(str_contains($html, 'Log Aktivitas Pengunjung'), 'Log aktivitas harus tersedia');
     }
 }
+// Warna desktop pada legenda dan ring harus sama-sama biru muda.
+$adminCss = file_get_contents(__DIR__ . '/../assets/admin.css');
+expect_dashboard(str_contains($adminCss, '.dot-desktop { background: #42a5f5; }'), 'Legenda desktop harus biru muda');
+expect_dashboard(str_contains($adminCss, '#42a5f5 var(--mobile-end) var(--desktop-end)'), 'Segmen desktop harus sama dengan warna legenda');
+
 // Warna dan proporsi ring harus tetap konsisten meski ada perangkat lain atau data kosong.
 $tab = 'overview';
 $devices = ['Mobile' => 3, 'Desktop' => 2, 'Tablet' => 4, 'TV' => 1];
