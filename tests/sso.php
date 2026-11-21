@@ -57,8 +57,14 @@ $db->row = [
     'is_blocked' => 0, 'id_user' => 12, 'nama_user' => 'Admin', 'nama_role' => 'Super Admin',
 ];
 $website = 'http://localhost/saimed-digital-link-hub';
-expect_sso(sso_authenticate($db, $token, $website)['id'] === '12', 'Token SSO tanpa id_user ditolak');
+$identity = sso_authenticate($db, $token, $website);
+expect_sso($identity['id'] === '12' && $identity['name'] === 'Admin', 'Identitas SSO tidak sesuai');
 expect_sso($db->parameters === ['token' => $token, 'exact_token' => $token, 'website' => $website], 'Parameter query tidak sesuai');
+expect_sso($identity['expires_at'] === $payload['exp'], 'Waktu kedaluwarsa harus memakai batas terdekat');
+$earlierJwt = JWT::encode(['exp' => time() + 60], $key, 'HS256');
+expect_sso(sso_authenticate($db, $earlierJwt, $website)['expires_at'] <= time() + 60, 'Kedaluwarsa JWT harus membatasi sesi');
+$longerJwt = JWT::encode(['exp' => time() + 3600], $key, 'HS256');
+expect_sso(sso_authenticate($db, $longerJwt, $website)['expires_at'] < time() + 3600, 'Kedaluwarsa database harus membatasi sesi');
 expect_sso(sso_authenticate($db, JWT::encode($payload + ['id_user' => 12], $key, 'HS256'), $website)['id'] === '12', 'Token dengan id_user cocok ditolak');
 expect_sso(sso_authenticate($db, JWT::encode($payload + ['id_user' => 99], $key, 'HS256'), $website) === null, 'id_user yang salah diterima');
 $original = $db->row;

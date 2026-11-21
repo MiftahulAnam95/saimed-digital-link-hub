@@ -112,5 +112,36 @@ function sso_authenticate(PDO $database, string $token, string $website): ?array
         || (string) $claims->id_user !== (string) $row['id_user'])) {
         return sso_reject('id_user_tidak_cocok');
     }
-    return ['id' => (string) $row['id_user'], 'name' => $row['nama_user']];
+    $expiresAt = $expires->getTimestamp();
+    if (isset($claims->exp) && is_numeric($claims->exp)) {
+        $expiresAt = min($expiresAt, (int) $claims->exp);
+    }
+    return ['id' => (string) $row['id_user'], 'name' => (string) $row['nama_user'], 'expires_at' => $expiresAt];
+}
+
+/** Foto profil adalah data opsional; kegagalannya tidak boleh menggagalkan login. */
+function sso_profile_photo_url(PDO $database, string $userId): ?string
+{
+    try {
+        $stmt = $database->prepare('SELECT nama_file FROM photo_profile WHERE id_user = :id_user LIMIT 1');
+        $stmt->execute(['id_user' => $userId]);
+        $row = $stmt->fetch();
+        $filename = $row['nama_file'] ?? null;
+        if (!is_string($filename) || $filename === '' || $filename === '.' || $filename === '..'
+            || strpbrk($filename, '/\\') !== false || preg_match('~[\x00-\x1f\x7f]~', $filename)) {
+            return null;
+        }
+        $base = getenv('SSO_PROFILE_PHOTO_BASE_URL');
+        $base = is_string($base) && $base !== '' ? rtrim($base, '/') : 'https://test-user-account.mandirialkesindo.co.id/profile%20user';
+        $parts = parse_url($base);
+        if (!filter_var($base, FILTER_VALIDATE_URL) || !$parts || !isset($parts['scheme'], $parts['host'])
+            || !in_array(strtolower($parts['scheme']), ['http', 'https'], true)
+            || isset($parts['user']) || isset($parts['pass']) || isset($parts['query']) || isset($parts['fragment'])) {
+            return null;
+        }
+        return $base . '/' . rawurlencode($filename);
+    } catch (Throwable $e) {
+        error_log('SAIMED SSO: foto profil tidak tersedia');
+        return null;
+    }
 }
