@@ -3,6 +3,17 @@ $page_title = 'Admin Analytics | SAIMED';
 $admin_page = true;
 require __DIR__ . '/../includes/header.php';
 require_once __DIR__ . '/../includes/dashboard-chart.php';
+require_once __DIR__ . '/../includes/dashboard-data.php';
+$days = dashboard_period($days)['days'];
+$periodLabel = $periodLabel ?? ($days === 'all' ? 'Semua waktu' : $days . ' hari terakhir');
+$chartDays = $chartDays ?? ($days === 'all' ? 30 : (int) $days);
+$previousViews = $previousViews ?? 0;
+$previousClicks = $previousClicks ?? 0;
+if (!isset($performance)) {
+    $performance = [];
+    foreach ($allLinks as $link) $performance[$link['key']] = ['title' => $link['title'], 'icon' => $link['icon'], 'count' => $linkClicks[$link['key']] ?? 0];
+}
+$topLink = $topLink ?? null;
 $chart = dashboard_chart($daily);
 $adminName = trim((string) ($identity['name'] ?? '')) ?: 'Super Admin';
 $sessionRemaining = max(0, (int) ($sessionRemaining ?? 0));
@@ -30,8 +41,8 @@ $tabIcons = [
     'activity' => '<path d="M3 12h4l3-7 4 14 3-7h4"/>',
 ];
 $metrics = [
-    ['label' => 'Total Kunjungan', 'value' => $views, 'icon' => 'eye'],
-    ['label' => 'Total Klik', 'value' => $clicks, 'icon' => 'click'],
+    ['label' => 'Total Kunjungan', 'value' => $views, 'icon' => 'eye', 'trend' => $days === 'all' || $dbError ? null : dashboard_trend($views, $previousViews)],
+    ['label' => 'Total Klik', 'value' => $clicks, 'icon' => 'click', 'trend' => $days === 'all' || $dbError ? null : dashboard_trend($clicks, $previousClicks)],
     ['label' => 'Pengunjung Unik', 'value' => count($visitors), 'icon' => 'users'],
     ['label' => 'Click-through Rate', 'value' => ($views ? round($clicks / $views * 100, 1) : 0) . '%', 'icon' => 'chart'],
 ];
@@ -121,14 +132,18 @@ $metricIcons = [
                     <input type="hidden" name="tab" value="<?= h($tab) ?>">
                     <label for="dashboard-period">Periode data</label>
                     <select id="dashboard-period" name="days" onchange="this.form.submit()">
-                        <?php foreach ([7, 14, 30] as $period): ?>
+                        <?php foreach (['7', '14', '30', '90', 'all'] as $period): ?>
                             <option value="<?= $period ?>" <?= $period === $days ? 'selected' : '' ?>>
-                                <?= $period ?> hari terakhir
+                                <?= $period === 'all' ? 'Semua waktu' : $period . ' hari terakhir' ?>
                             </option>
                         <?php endforeach; ?>
                     </select>
                     <noscript><button class="button" type="submit">Terapkan</button></noscript>
                 </form>
+                <div class="report-actions">
+                    <a class="button" href="?page=admin&amp;tab=<?= h($tab) ?>&amp;days=<?= h($days) ?>">Perbarui</a>
+                    <a class="button primary" href="?page=admin&amp;export=csv&amp;days=<?= h($days) ?>">Ekspor CSV</a>
+                </div>
             </div>
 
         <?php if ($notice): ?>
@@ -138,6 +153,7 @@ $metricIcons = [
             <p class="notice error">Database tidak tersedia. Periksa konfigurasi MySQL dan jalankan schema.sql.</p>
         <?php endif; ?>
 
+        <?php if ($demoCount > 0): ?><p class="analytics-demo-note">Periode ini mencakup <?= h($demoCount) ?> aktivitas contoh.</p><?php endif; ?>
         <?php if ($tab === 'overview'): ?>
             <div class="overview-top">
                 <div class="kpis" aria-label="Ringkasan statistik">
@@ -147,11 +163,11 @@ $metricIcons = [
                                 <span class="kpi-icon" aria-hidden="true">
                                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><?= $metricIcons[$metric['icon']] ?></svg>
                                 </span>
-                                <span class="kpi-period"><?= $days ?> hari</span>
+                                <span class="kpi-period"><?= $days === 'all' ? 'Semua waktu' : $days . ' hari' ?></span>
                             </div>
                             <span class="kpi-label"><?= h($metric['label']) ?></span>
                             <strong><?= h($metric['value']) ?></strong>
-                            <small>Dalam <?= $days ?> hari terakhir</small>
+                            <small><?= h($metric['trend'] ?? $periodLabel) ?></small>
                         </div>
                     <?php endforeach; ?>
                 </div>
@@ -161,12 +177,12 @@ $metricIcons = [
                         <div>
                             <p class="panel-eyebrow">PERFORMA</p>
                             <h2 id="activity-chart-title">Aktivitas Harian</h2>
-                            <p>Kunjungan dan klik selama <?= $days ?> hari terakhir</p>
+                            <p>Kunjungan dan klik selama <?= $chartDays ?> hari terakhir<?= $days === 'all' ? ' (ringkasan mencakup semua waktu)' : '' ?></p>
                         </div>
-                        <span class="period-badge"><?= $days ?> hari</span>
+                        <span class="period-badge"><?= $chartDays ?> hari</span>
                     </div>
                     <div class="chart-legend" aria-label="Legenda grafik"><span><i class="legend-views"></i>Kunjungan</span><span><i class="legend-clicks"></i>Klik</span></div>
-                    <div class="activity-chart" role="img" aria-label="Grafik kunjungan dan klik harian selama <?= $days ?> hari. Rincian tersedia pada tabel di bawah grafik.">
+                    <div class="activity-chart" role="img" aria-label="Grafik kunjungan dan klik harian selama <?= $chartDays ?> hari. Rincian tersedia pada tabel di bawah grafik.">
                         <div class="chart-scale" aria-hidden="true"><?php foreach ($chart['scale'] as $tick): ?><span><?= h($tick) ?></span><?php endforeach; ?></div>
                         <div class="chart-plot">
                             <div class="chart-lines" aria-hidden="true"></div>
@@ -176,7 +192,7 @@ $metricIcons = [
                                 <?php if ($chart['views'] !== ''): ?><polyline points="<?= h($chart['views']) ?>" fill="none" stroke="#1995ed" stroke-width="2.5" vector-effect="non-scaling-stroke" stroke-linecap="round" stroke-linejoin="round"/><?php endif; ?>
                                 <?php if ($chart['clicks'] !== ''): ?><polyline points="<?= h($chart['clicks']) ?>" fill="none" stroke="#62bbad" stroke-width="2" vector-effect="non-scaling-stroke" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="5 4"/><?php endif; ?>
                             </svg>
-                            <?php if (!$chart['has_data']): ?><span class="chart-empty">Belum ada aktivitas pada periode ini.</span><?php endif; ?>
+                            <?php if (!$chart['has_data']): ?><span class="chart-empty">Belum ada aktivitas pada rentang grafik.</span><?php endif; ?>
                         </div>
                     </div>
                     <div class="chart-labels" aria-hidden="true"><?php foreach ($chart['labels'] as $dateLabel): ?><span style="left: <?= h($dateLabel['position']) ?>%"><?= h($dateLabel['text']) ?></span><?php endforeach; ?></div>
@@ -208,15 +224,19 @@ $metricIcons = [
                 <section class="panel performance-panel">
                     <p class="panel-eyebrow">TAUTAN</p>
                     <h2>Performa Tautan</h2>
-                    <p>Jumlah klik pada setiap tautan</p>
-                    <?php foreach ($allLinks as $link): ?>
-                        <div class="stat-row">
-                            <?= icon($link['icon']) ?>
-                            <span><?= h($link['title']) ?></span>
-                            <strong><?= h($linkClicks[$link['key']] ?? 0) ?> <small>klik</small></strong>
+                    <p>Jumlah dan kontribusi dari seluruh klik</p>
+                    <?php foreach ($performance as $item): ?>
+                        <?php $contribution = $clicks > 0 ? round($item['count'] * 100 / $clicks, 1) : 0; ?>
+                        <div class="performance-row">
+                            <div class="performance-row-top">
+                                <?= icon($item['icon']) ?>
+                                <span class="performance-name"><?= h($item['title']) ?></span>
+                                <strong><?= h($item['count']) ?> <small>klik</small></strong>
+                            </div>
+                            <div class="performance-detail"><span><?= h(number_format($contribution, 1, ',', '.')) ?>% kontribusi</span><div class="browser-track" aria-hidden="true"><span style="width: <?= h($contribution) ?>%"></span></div></div>
                         </div>
                     <?php endforeach; ?>
-                    <?php if (!$allLinks): ?><p class="empty-message">Belum ada tautan.</p><?php endif; ?>
+                    <?php if (!$performance): ?><p class="empty-message">Belum ada tautan.</p><?php endif; ?>
                     <a class="panel-link" href="?page=admin&amp;tab=links&amp;days=<?= $days ?>">Kelola tautan <span aria-hidden="true">→</span></a>
                 </section>
 
@@ -227,6 +247,16 @@ $metricIcons = [
                             <div class="stat-row"><span><?= h($event['target_label'] ?? 'Halaman publik') ?><small><?= h($event['device']) ?> · <?= h($event['event_type']) ?></small></span><small><?= h(date('d M H:i', strtotime($event['created_at']))) ?> UTC</small></div>
                         <?php endforeach; ?>
                         <?php if (!$events): ?><p class="empty-message">Belum ada aktivitas.</p><?php endif; ?>
+                    </section>
+                    <section class="panel insight-panel">
+                        <p class="panel-eyebrow">INSIGHT</p>
+                        <?php if ($topLink): ?>
+                            <h2><?= h($topLink['title']) ?> paling diminati</h2>
+                            <p>Tautan ini memperoleh <?= h($topLink['count']) ?> klik pada periode yang dipilih.</p>
+                        <?php else: ?>
+                            <h2>Kenali minat pengunjung</h2>
+                            <p>Insight akan muncul setelah ada klik yang tercatat.</p>
+                        <?php endif; ?>
                     </section>
                     <section class="panel browser-panel">
                         <p class="panel-eyebrow">AUDIENS</p>
@@ -294,7 +324,7 @@ $metricIcons = [
         <?php else: ?>
             <section class="panel">
                 <h2>Log Aktivitas Pengunjung</h2>
-                <p>50 event terbaru dalam <?= $days ?> hari terakhir</p>
+                <p>50 event terbaru · <?= h($periodLabel) ?></p>
                 <div class="table-wrap">
                     <table>
                         <thead>

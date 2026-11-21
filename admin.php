@@ -92,5 +92,9 @@ if (!$loggedIn) {
     return;
 }
 
+if ($_SERVER['REQUEST_METHOD'] === 'GET' && ($_GET['export'] ?? '') === 'csv') {
+    require __DIR__ . '/includes/admin-export.php';
+}
+
 require __DIR__ . '/includes/admin-stats.php';
 require __DIR__ . '/templates/admin-dashboard.php';
