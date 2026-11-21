@@ -135,22 +135,24 @@ $metricIcons = [
                     <h1><?= $tab === 'overview' ? 'Selamat datang kembali' : h($tabs[$tab]) ?></h1>
                     <p><?= h($tabDescriptions[$tab]) ?></p>
                 </div>
-                <form method="get" class="period-form">
-                    <input type="hidden" name="page" value="admin">
-                    <input type="hidden" name="tab" value="<?= h($tab) ?>">
-                    <label for="dashboard-period">Periode data</label>
-                    <select id="dashboard-period" name="days" onchange="this.form.submit()">
-                        <?php foreach (['7', '14', '30', '90', 'all'] as $period): ?>
-                            <option value="<?= $period ?>" <?= $period === $days ? 'selected' : '' ?>>
-                                <?= $period === 'all' ? 'Semua waktu' : $period . ' hari terakhir' ?>
-                            </option>
-                        <?php endforeach; ?>
-                    </select>
-                    <noscript><button class="button" type="submit">Terapkan</button></noscript>
-                </form>
-                <div class="report-actions">
-                    <a class="button" href="?page=admin&amp;tab=<?= h($tab) ?>&amp;days=<?= h($days) ?>">Perbarui</a>
-                    <a class="button primary" href="?page=admin&amp;export=csv&amp;days=<?= h($days) ?>">Ekspor CSV</a>
+                <div class="dash-controls">
+                    <form method="get" class="period-form">
+                        <input type="hidden" name="page" value="admin">
+                        <input type="hidden" name="tab" value="<?= h($tab) ?>">
+                        <label for="dashboard-period">Periode data</label>
+                        <select id="dashboard-period" name="days" onchange="this.form.submit()">
+                            <?php foreach (['7', '14', '30', '90', 'all'] as $period): ?>
+                                <option value="<?= $period ?>" <?= $period === $days ? 'selected' : '' ?>>
+                                    <?= $period === 'all' ? 'Semua waktu' : $period . ' hari terakhir' ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                        <noscript><button class="button" type="submit">Terapkan</button></noscript>
+                    </form>
+                    <div class="report-actions">
+                        <a class="button" href="?page=admin&amp;tab=<?= h($tab) ?>&amp;days=<?= h($days) ?>">Perbarui</a>
+                        <a class="button primary" href="?page=admin&amp;export=csv&amp;days=<?= h($days) ?>">Ekspor CSV</a>
+                    </div>
                 </div>
             </div>
 
