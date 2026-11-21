@@ -329,7 +329,7 @@
 .legend-views { background: #1995ed; }
 .legend-clicks { background: #62bbad; }
 .dot-mobile { background: #1aa66b; }
-.dot-desktop { background: #2155c5; }
+.dot-desktop { background: #42a5f5; }
 .dot-tablet { background: #8b5cf6; }
 .dot-other { background: #aebdc6; }
 .activity-chart { display: grid; grid-template-columns: 34px minmax(0, 1fr); min-height: 200px; flex: 1; }
@@ -348,7 +348,7 @@
 .chart-details .table-wrap { margin-top: 10px; max-height: 250px; overflow: auto; }
 .overview-bottom { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.18fr) minmax(0, 1.12fr); gap: 16px; align-items: stretch; margin-top: 16px; }
 .overview-secondary { display: grid; gap: 16px; align-content: start; min-width: 0; }
-.device-ring { display: grid; width: 148px; height: 148px; margin: 26px auto; place-items: center; border-radius: 50%; background: conic-gradient(#1aa66b 0% var(--mobile-end), #2155c5 var(--mobile-end) var(--desktop-end), #8b5cf6 var(--desktop-end) var(--tablet-end), #aebdc6 var(--tablet-end) 100%); }
+.device-ring { display: grid; width: 148px; height: 148px; margin: 26px auto; place-items: center; border-radius: 50%; background: conic-gradient(#1aa66b 0% var(--mobile-end), #42a5f5 var(--mobile-end) var(--desktop-end), #8b5cf6 var(--desktop-end) var(--tablet-end), #aebdc6 var(--tablet-end) 100%); }
 .device-ring--empty { background: #e3edf1; }
 .device-ring > div { display: flex; width: 116px; height: 116px; flex-direction: column; align-items: center; justify-content: center; border-radius: 50%; background: #fff; }
 .device-ring strong { color: #244656; font-size: 28px; line-height: 1; }
