@@ -37,6 +37,8 @@ $html = ob_get_clean();
 expect(str_contains($html, '&lt;script&gt;'), 'Judul tautan di-escape');
 expect(!str_contains($html, '<script>alert(1)</script>'), 'Skrip tidak dirender');
 expect(str_contains($html, 'assets/public.js'), 'Interaksi halaman dimuat');
+expect(is_file(__DIR__ . '/../assets/favicon.ico'), 'File favicon tersedia');
+expect(str_contains($html, '<link rel="icon" type="image/x-icon" href="assets/favicon.ico">'), 'Favicon tersedia di halaman publik');
 expect(!str_contains($html, 'assets/admin.css'), 'Halaman publik tidak memuat CSS admin');
 
 // Halaman website resmi menampilkan status pengembangan dan jalur kembali.
@@ -47,6 +49,7 @@ expect(str_contains($officialHtml, 'masih dalam tahap pengembangan'), 'Status pe
 expect(str_contains($officialHtml, 'href="./"'), 'Tautan kembali ke Link Hub tersedia');
 expect(str_contains($officialHtml, 'href="' . h(WHATSAPP) . '"'), 'Tautan WhatsApp tersedia');
 expect(!str_contains($officialHtml, 'assets/admin.css'), 'Halaman pengembangan tidak memuat CSS admin');
+expect(str_contains($officialHtml, 'href="assets/favicon.ico"'), 'Favicon tersedia di halaman resmi');
 expect(fallback_links()[3]['url'] === '?page=official', 'Tautan website resmi tetap mengarah ke halaman resmi');
 
 // Header bersama harus mengamankan judul dan memuat CSS sesuai halaman.
@@ -58,5 +61,6 @@ require __DIR__ . '/../includes/footer.php';
 $adminHeader = ob_get_clean();
 expect(str_contains($adminHeader, '&lt;judul uji&gt;'), 'Judul header di-escape');
 expect(str_contains($adminHeader, 'assets/admin.css'), 'CSS admin dimuat');
+expect(str_contains($adminHeader, 'href="assets/favicon.ico"'), 'Favicon tersedia di halaman admin');
 
 echo "Smoke test berhasil.\n";
