@@ -39,6 +39,16 @@ expect(!str_contains($html, '<script>alert(1)</script>'), 'Skrip tidak dirender'
 expect(str_contains($html, 'assets/public.js'), 'Interaksi halaman dimuat');
 expect(!str_contains($html, 'assets/admin.css'), 'Halaman publik tidak memuat CSS admin');
 
+// Halaman website resmi menampilkan status pengembangan dan jalur kembali.
+ob_start();
+require __DIR__ . '/../official.php';
+$officialHtml = ob_get_clean();
+expect(str_contains($officialHtml, 'masih dalam tahap pengembangan'), 'Status pengembangan ditampilkan');
+expect(str_contains($officialHtml, 'href="./"'), 'Tautan kembali ke Link Hub tersedia');
+expect(str_contains($officialHtml, 'href="' . h(WHATSAPP) . '"'), 'Tautan WhatsApp tersedia');
+expect(!str_contains($officialHtml, 'assets/admin.css'), 'Halaman pengembangan tidak memuat CSS admin');
+expect(fallback_links()[3]['url'] === '?page=official', 'Tautan website resmi tetap mengarah ke halaman resmi');
+
 // Header bersama harus mengamankan judul dan memuat CSS sesuai halaman.
 $page_title = '<judul uji>';
 $admin_page = true;
