@@ -382,8 +382,6 @@
 .dashboard input:not([type='hidden']):not([type='checkbox']), .dashboard select { border-color: #dfe9ee; border-radius: 9px; background: #fff; color: #365669; }
 .dashboard .table-wrap { max-width: 100%; }
 .dashboard th, .dashboard td { border-color: #edf2f5; }
-.dashboard .demo { margin-top: 16px; background: #fbfdfe; box-shadow: none; }
-.dashboard .demo strong { color: #466978; font-size: 13px; }
 .admin-footer { display: flex; justify-content: space-between; gap: 16px; padding-top: 42px; color: #a8d3cb; font-size: 12px; }
 .dashboard .admin-footer { padding: 22px 2px 0; color: #a4b6bf; }
 @media (max-width: 1200px) {

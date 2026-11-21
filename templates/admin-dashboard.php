@@ -317,17 +317,6 @@ $metricIcons = [
             </section>
         <?php endif; ?>
 
-        <div class="panel demo">
-            <div>
-                <strong>Data analytics tersimpan di MySQL</strong>
-                <p><?= $demoCount ? h($demoCount) . ' event data contoh aktif pada periode ini.' : 'Semua angka berasal dari kunjungan dan klik nyata.' ?></p>
-            </div>
-            <form method="post">
-                <?php token_input(); ?>
-                <input type="hidden" name="action" value="demo">
-                <button class="button"><?= $demoCount ? 'Perbarui' : 'Muat' ?> Data Contoh</button>
-            </form>
-        </div>
         <footer class="admin-footer"><span>© SAIMED <?= date('Y') ?></span><span>All Rights Reserved</span></footer>
         </main>
     </div>
