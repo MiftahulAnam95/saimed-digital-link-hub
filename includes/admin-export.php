@@ -6,7 +6,7 @@ declare(strict_types=1);
 require_once __DIR__ . '/dashboard-data.php';
 $period = dashboard_period($_GET['days'] ?? '7');
 try {
-    $sql = 'SELECT created_at, event_type, target_label, device, is_demo FROM analytics_events WHERE created_at < :end';
+    $sql = 'SELECT created_at, event_type, target_label, device FROM analytics_events WHERE is_demo = 0 AND created_at < :end';
     $params = ['end' => $period['end']];
     if ($period['start'] !== null) {
         $sql .= ' AND created_at >= :start';
@@ -26,7 +26,7 @@ header('Cache-Control: no-store, private');
 header('X-Content-Type-Options: nosniff');
 $out = fopen('php://output', 'wb');
 fwrite($out, "\xEF\xBB\xBFsep=;\r\n");
-fputcsv($out, ['Waktu (UTC)', 'Aktivitas', 'Nama tautan', 'Perangkat', 'Data contoh'], ';', '"', '');
+fputcsv($out, ['Waktu (UTC)', 'Aktivitas', 'Nama tautan', 'Perangkat'], ';', '"', '');
 while ($event = $stmt->fetch()) {
     fputcsv($out, dashboard_csv_row($event), ';', '"', '');
 }

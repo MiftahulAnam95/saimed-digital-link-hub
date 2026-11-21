@@ -6,7 +6,7 @@ require __DIR__ . '/../includes/links.php';
 $_GET = ['days' => '90'];
 class ExportTestDb {
     public function prepare(string $sql): ExportTestStatement {
-        if (!str_contains($sql, 'created_at >= :start') || !str_contains($sql, 'created_at < :end')) throw new RuntimeException('Filter ekspor hilang');
+        if (!str_contains($sql, 'created_at >= :start') || !str_contains($sql, 'created_at < :end') || !str_contains($sql, 'is_demo = 0')) throw new RuntimeException('Filter ekspor hilang');
         return new ExportTestStatement();
     }
 }
@@ -32,8 +32,8 @@ register_shutdown_function(static function (): void {
     $header = fgetcsv($stream, 0, ';', '"', '');
     $row = fgetcsv($stream, 0, ';', '"', '');
     fclose($stream);
-    if ($header !== ['Waktu (UTC)', 'Aktivitas', 'Nama tautan', 'Perangkat', 'Data contoh']
-        || $row !== ['2026-01-01 12:00:00', 'link_click', "'=SUM(1;2)", 'Mobile', 'Tidak']) {
+    if ($header !== ['Waktu (UTC)', 'Aktivitas', 'Nama tautan', 'Perangkat']
+        || $row !== ['2026-01-01 12:00:00', 'link_click', "'=SUM(1;2)", 'Mobile']) {
         throw new RuntimeException('Konten CSV atau perlindungan formula salah');
     }
     echo "Tes ekspor dashboard berhasil.\n";

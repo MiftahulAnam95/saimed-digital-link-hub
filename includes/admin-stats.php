@@ -13,7 +13,7 @@ $previousViews = 0;
 $previousClicks = 0;
 $dbError = false;
 try {
-    $sql = 'SELECT * FROM analytics_events WHERE created_at < :end';
+    $sql = 'SELECT * FROM analytics_events WHERE is_demo = 0 AND created_at < :end';
     $params = ['end' => $period['end']];
     if ($period['start'] !== null) {
         $sql .= ' AND created_at >= :start';
@@ -23,7 +23,7 @@ try {
     $stmt->execute($params);
     $events = $stmt->fetchAll();
     if ($period['previous_start'] !== null) {
-        $stmt = db()->prepare('SELECT event_type, COUNT(*) AS total FROM analytics_events WHERE created_at >= :start AND created_at < :end GROUP BY event_type');
+        $stmt = db()->prepare('SELECT event_type, COUNT(*) AS total FROM analytics_events WHERE is_demo = 0 AND created_at >= :start AND created_at < :end GROUP BY event_type');
         $stmt->execute(['start' => $period['previous_start'], 'end' => $period['start']]);
         foreach ($stmt->fetchAll() as $row) {
             if ($row['event_type'] === 'view') $previousViews += (int) $row['total'];
@@ -42,7 +42,6 @@ $browsers = [];
 $linkClicks = [];
 $performance = [];
 $daily = [];
-$demoCount = 0;
 foreach ($allLinks as $link) {
     $performance[$link['key']] = ['title' => $link['title'], 'icon' => $link['icon'], 'count' => 0];
 }
@@ -72,7 +71,6 @@ foreach ($events as $event) {
         $performance[$key]['count']++;
         $linkClicks[$key] = ($linkClicks[$key] ?? 0) + 1;
     }
-    if (boolval_db($event['is_demo'])) $demoCount++;
 }
 arsort($devices);
 arsort($browsers);

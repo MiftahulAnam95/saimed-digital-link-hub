@@ -473,7 +473,6 @@
 /* Laporan dan insight dari data analytics yang dipilih. */
 .report-actions { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; }
 .dashboard .report-actions .button { display: inline-flex; align-items: center; min-height: 38px; padding: 9px 12px; font-size: 11px; text-decoration: none; white-space: nowrap; }
-.analytics-demo-note { padding: 10px 12px; border: 1px solid #f2dfb1; border-radius: 8px; background: #fff9e8; color: #806329; font-size: 12px; }
 .performance-row { padding: 13px 0; border-bottom: 1px solid #eef2f5; }
 .performance-row-top { display: flex; align-items: center; gap: 10px; min-width: 0; color: #68828f; font-size: 12px; }
 .performance-row-top .platform-icon { flex: 0 0 32px; width: 32px; height: 32px; padding: 4px; border-radius: 8px; background: #f2f8fb; }
