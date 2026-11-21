@@ -61,7 +61,9 @@ foreach (['overview' => 'Ringkasan', 'links' => 'Kelola Tautan', 'activity' => '
         expect_dashboard(str_contains($html, 'Aktivitas Harian'), 'Grafik aktivitas harus tersedia');
         expect_dashboard(str_contains($html, 'Lihat rincian harian'), 'Tabel data grafik harus tersedia');
         expect_dashboard(str_contains($html, '100% interaksi menggunakan perangkat mobile'), 'Persentase perangkat harus sesuai data');
-        expect_dashboard(str_contains($html, '<polyline'), 'Grafik harus memakai data harian');
+        expect_dashboard(str_contains($html, '<path d="M '), 'Grafik harus memakai data harian');
+        expect_dashboard(str_contains($html, 'role="slider"') && str_contains($html, 'data-points='), 'Grafik harus dapat diakses dan berisi data');
+        expect_dashboard(str_contains($html, 'assets/dashboard-chart.js'), 'Interaksi grafik harus tersedia');
         expect_dashboard(str_contains($html, '+100,0% vs periode sebelumnya'), 'Tren kunjungan harus ditampilkan');
         expect_dashboard(str_contains($html, '-50,0% vs periode sebelumnya'), 'Tren klik harus ditampilkan');
         expect_dashboard(str_contains($html, '&lt;tautan&gt; paling diminati'), 'Insight dan escape nama tautan diperlukan');
