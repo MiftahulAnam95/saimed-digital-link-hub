@@ -41,6 +41,12 @@ foreach (['overview' => 'Ringkasan', 'links' => 'Kelola Tautan', 'activity' => '
     expect_dashboard(str_contains($html, 'name="csrf" value="test-csrf"'), 'Form harus memiliki token CSRF');
     expect_dashboard(str_contains($html, 'name="days"'), 'Pemilihan periode harus tetap tersedia');
     expect_dashboard(!str_contains($html, '<script>alert(1)</script>'), 'Data tautan tidak boleh menjadi HTML');
+    if ($tab === 'overview') {
+        expect_dashboard(str_contains($html, 'Aktivitas Harian'), 'Grafik aktivitas harus tersedia');
+        expect_dashboard(str_contains($html, 'Lihat rincian harian'), 'Tabel data grafik harus tersedia');
+        expect_dashboard(str_contains($html, '100% interaksi menggunakan perangkat mobile'), 'Persentase perangkat harus sesuai data');
+        expect_dashboard(str_contains($html, '<polyline'), 'Grafik harus memakai data harian');
+    }
     if ($tab === 'links') {
         expect_dashboard(str_contains($html, 'name="action" value="add"'), 'Tambah tautan harus tersedia');
         expect_dashboard(str_contains($html, 'name="action" value="save"'), 'Simpan tautan harus tersedia');
