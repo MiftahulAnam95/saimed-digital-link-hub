@@ -2,18 +2,13 @@
 
 declare(strict_types=1);
 
-/** Membuka koneksi MySQL sekali untuk setiap permintaan. */
-function db(): PDO
+/** Memuat konfigurasi database Link Hub tanpa membuka koneksi. */
+function db_config(): array
 {
-    static $connection = null;
-    if ($connection instanceof PDO) {
-        return $connection;
-    }
-
     // Nilai bawaan cocok untuk instalasi XAMPP lokal. Atur variabel ini di server produksi.
     $host = getenv('DB_HOST') ?: '127.0.0.1';
     $port = getenv('DB_PORT') ?: '3306';
-    $database = getenv('DB_DATABASE') ?: 'saimed';
+    $database = getenv('DB_DATABASE') ?: 'test_saimed_link';
     $username = getenv('DB_USERNAME');
     $password = getenv('DB_PASSWORD');
     $username = $username === false ? 'root' : $username;
@@ -39,6 +34,29 @@ function db(): PDO
         || !preg_match('/^[0-9]+$/', (string) $port) || (int) $port < 1 || (int) $port > 65535) {
         throw new RuntimeException('Konfigurasi MySQL tidak valid');
     }
+
+    return [
+        'host' => $host,
+        'port' => (string) $port,
+        'database' => $database,
+        'username' => $username,
+        'password' => $password,
+    ];
+}
+
+/** Membuka koneksi MySQL sekali untuk setiap permintaan. */
+function db(): PDO
+{
+    static $connection = null;
+    if ($connection instanceof PDO) {
+        return $connection;
+    }
+    $config = db_config();
+    $host = $config['host'];
+    $port = $config['port'];
+    $database = $config['database'];
+    $username = $config['username'];
+    $password = $config['password'];
 
     $dsn = 'mysql:host=' . $host . ';port=' . $port
         . ';dbname=' . $database . ';charset=utf8mb4';

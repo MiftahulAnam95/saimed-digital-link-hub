@@ -1,5 +1,13 @@
 # SAIMED Digital Link Hub
 
+## Database Link Hub dan analytics
+
+Database aplikasi bawaan adalah **`test_saimed_link`** di MySQL lokal (`127.0.0.1:3306`, pengguna `root`, password kosong). Database ini menyimpan tautan dan analytics, terpisah dari database pengguna SSO `test_user`.
+
+Untuk instalasi baru, buat database `test_saimed_link` di phpMyAdmin, pilih database tersebut, lalu impor `schema.sql`. Jika sebelumnya memakai database `saimed` dan ingin mempertahankan data, cadangkan database lama terlebih dahulu. Hentikan sementara pencatatan/perubahan data, ekspor struktur dan data dari database lama, lalu impor ke `test_saimed_link`. Pastikan file ekspor tidak memaksa `CREATE DATABASE` atau `USE` ke nama lama. Verifikasi tabel, relasi dan jumlah data sebelum kembali menjalankan aplikasi. Jangan hapus database lama sampai hasilnya dipastikan benar; perubahan kode ini tidak memindahkan atau menghapus data secara otomatis. Untuk database baru yang sudah diimpor dari database lama, tidak perlu mengimpor `schema.sql` lagi.
+
+Nama dan koneksi dapat diatur melalui `DB_DATABASE`, `DB_HOST`, `DB_PORT`, `DB_USERNAME`, dan `DB_PASSWORD`. Jika `DATABASE_URL` disetel, nilai URL tersebut **menggantikan** konfigurasi `DB_*`, termasuk nama database. Bila sebelumnya ada `DB_DATABASE=saimed` atau `DATABASE_URL` yang menunjuk ke `saimed`, perbarui pengaturan server tersebut dan restart Apache. Koneksi SSO `SSO_DB_*` tidak berubah.
+
 ## Konfigurasi SSO
 
 Login admin menggunakan cookie `jwt_token_test` dan database pengguna SSO. Akun harus berperan **Super Admin**, memiliki akses ke website ini, tidak diblokir, dan memiliki token serta status perangkat yang valid. Tidak ada login password admin lokal.
@@ -31,7 +39,7 @@ Jika kembali ke halaman admin dengan pesan sesi tidak valid, cari baris terbaru 
 
 ## Pengujian
 
-Jalankan `php tests/smoke.php`, `php tests/dashboard.php`, `php tests/dashboard-chart.php`, `php tests/dashboard-data.php`, `php tests/dashboard-stats.php`, `php tests/dashboard-export.php`, `php tests/admin-no-demo.php`, `php tests/sso.php`, `php tests/sso-profile.php`, `php tests/sso-diagnostics.php`, `php tests/sso-url.php`, `php tests/sso-return.php`, serta `php tests/sso-controller.php <skenario>` untuk setiap skenario `start`, `retry`, `returned`, dan `config`; periksa juga sintaks PHP. Tes SSO memerlukan dependensi Composer; tes URL memerlukan ekstensi OpenSSL.
+Jalankan `php tests/smoke.php`, `php tests/db-config.php`, `php tests/dashboard.php`, `php tests/dashboard-chart.php`, `php tests/dashboard-data.php`, `php tests/dashboard-stats.php`, `php tests/dashboard-export.php`, `php tests/admin-no-demo.php`, `php tests/sso.php`, `php tests/sso-profile.php`, `php tests/sso-diagnostics.php`, `php tests/sso-url.php`, `php tests/sso-return.php`, serta `php tests/sso-controller.php <skenario>` untuk setiap skenario `start`, `retry`, `returned`, dan `config`; periksa juga sintaks PHP. Tes SSO memerlukan dependensi Composer; tes URL memerlukan ekstensi OpenSSL.
 
 ## Laporan analytics
 
