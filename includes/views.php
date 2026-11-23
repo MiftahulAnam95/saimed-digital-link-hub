@@ -7,7 +7,7 @@ function avatar(bool $compact = false): void
     $class = $compact ? 'brand-avatar brand-avatar--compact' : 'brand-avatar';
     ?>
     <div class="<?= h($class) ?>">
-        <img class="brand-logo" src="assets/saimed-logo.png" alt="Logo SAIMED">
+        <img class="brand-logo" src="assets/images/saimed-logo.png" alt="Logo SAIMED">
     </div>
     <?php
 }
@@ -16,7 +16,7 @@ function icon(string $name): string
 {
     $allowedIcons = ['instagram', 'whatsapp', 'shopee', 'tokopedia', 'website', 'link'];
     $iconName = in_array($name, $allowedIcons, true) ? $name : 'link';
-    $iconPath = 'assets/icons/' . $iconName . '.svg';
+    $iconPath = 'assets/images/icons/' . $iconName . '.svg';
 
     // Setiap SVG dimuat terpisah agar ID gradient dan clipPath tidak bertabrakan.
     return '<span class="platform-icon icon-' . h($iconName) . '" aria-hidden="true">'

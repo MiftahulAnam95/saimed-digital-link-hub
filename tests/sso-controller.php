@@ -8,7 +8,7 @@ if (!in_array($scenario, ['start', 'retry', 'returned', 'config'], true)) {
     throw new InvalidArgumentException('Pilih skenario start, retry, returned, atau config.');
 }
 require __DIR__ . '/../app.php';
-require __DIR__ . '/../includes/sso-return.php';
+require __DIR__ . '/../akses.php';
 session_name('SAIMEDTESTSESSID');
 session_start();
 $_GET = [];

@@ -5,7 +5,7 @@ declare(strict_types=1);
 use Firebase\JWT\JWT;
 use Firebase\JWT\Key;
 
-require_once __DIR__ . '/../config/koneksi_sso.php';
+require_once __DIR__ . '/config/koneksi_user.php';
 
 // URL diatur secara eksplisit, tidak dibentuk dari header Host milik pengguna.
 function sso_app_url(): string
@@ -144,4 +144,159 @@ function sso_profile_photo_url(PDO $database, string $userId): ?string
         error_log('SAIMED SSO: foto profil tidak tersedia');
         return null;
     }
+}
+
+
+// Simpan tujuan dan status percobaan hanya di sesi aplikasi, bukan di URL browser.
+function sso_mark_login_pending(): void
+{
+    unset($_SESSION['sso_login_returned']);
+    $_SESSION['sso_login_pending_until'] = time() + 600;
+}
+
+function sso_login_pending(): bool
+{
+    $until = $_SESSION['sso_login_pending_until'] ?? null;
+    if (!is_int($until) || $until <= time()) {
+        unset($_SESSION['sso_login_pending_until']);
+        return false;
+    }
+    return true;
+}
+
+function sso_mark_login_returned(): void
+{
+    unset($_SESSION['sso_login_pending_until']);
+    $_SESSION['sso_login_returned'] = true;
+}
+
+function sso_should_return_to_admin(string $page, string $method): bool
+{
+    if (!sso_login_pending() || $page !== 'home' || $method !== 'GET') {
+        return false;
+    }
+    // Juga tangani cookie yang tidak terkirim agar kesalahannya terlihat di admin.
+    sso_mark_login_returned();
+    return true;
+}
+
+function sso_should_start_login(string $method, bool $loggedIn, bool $hasError): bool
+{
+    return $method === 'GET' && !$loggedIn && !$hasError
+        && empty($_SESSION['sso_login_returned']) && !sso_login_pending();
+}
+
+// Dipanggil untuk setiap request admin sebelum tindakan atau data dashboard.
+function sso_check_admin_access(?PDO $database = null): array
+{
+    $autoload = __DIR__ . '/vendor/autoload.php';
+    if (is_file($autoload)) {
+        require_once $autoload;
+    }
+    $loggedIn = false;
+    $identity = null;
+    $profilePhotoUrl = null;
+    $sessionRemaining = 0;
+    $ssoError = '';
+    $token = $_COOKIE['jwt_token_test'] ?? '';
+    if (is_string($token) && $token !== '') {
+        try {
+            if (!class_exists(\Firebase\JWT\JWT::class)) {
+                throw new RuntimeException('Dependensi SSO belum terpasang.');
+            }
+            $ssoDatabase = $database ?? sso_db();
+            $identity = sso_authenticate($ssoDatabase, $token, sso_app_url());
+            $tokenHash = hash('sha256', $token);
+            $timedOut = $identity && (
+                (isset($_SESSION['sso_timed_out']) && hash_equals($_SESSION['sso_timed_out'], $tokenHash))
+                || (isset($_SESSION['sso_token_hash'], $_SESSION['sso_last_activity'])
+                    && hash_equals($_SESSION['sso_token_hash'], $tokenHash)
+                    && time() - $_SESSION['sso_last_activity'] >= 1800)
+            );
+            if ($timedOut) {
+                // Token lama tetap diblokir sampai SSO menerbitkan token baru.
+                $_SESSION['sso_timed_out'] = $tokenHash;
+                if (!empty($_SESSION['sso_login_returned'])) {
+                    $identity = null;
+                    $ssoError = 'Sesi SSO telah berakhir. Silakan periksa sesi SSO sebelum mencoba lagi.';
+                } else {
+                    $logoutUrl = sso_logout_url();
+                    unset($_SESSION['sso_token_hash'], $_SESSION['sso_last_activity']);
+                    session_regenerate_id(true);
+                    sso_mark_login_pending();
+                    header('Location: ' . $logoutUrl, true, 303);
+                    exit();
+                }
+            }
+            if ($identity) {
+                unset($_SESSION['sso_timed_out'], $_SESSION['sso_login_pending_until'], $_SESSION['sso_login_returned']);
+                if (!isset($_SESSION['sso_token_hash']) || !hash_equals($_SESSION['sso_token_hash'], $tokenHash)) {
+                    session_regenerate_id(true);
+                    $_SESSION['csrf'] = bin2hex(random_bytes(32));
+                }
+                $_SESSION['sso_token_hash'] = $tokenHash;
+                $_SESSION['sso_last_activity'] = time();
+                $loggedIn = true;
+                $profilePhotoUrl = sso_profile_photo_url($ssoDatabase, $identity['id']);
+                $sessionRemaining = max(0, min($_SESSION['sso_last_activity'] + 1800, $identity['expires_at']) - time());
+            }
+        } catch (Throwable $e) {
+            error_log('SAIMED SSO: ' . $e->getMessage());
+            $ssoError = 'SSO belum tersedia. Periksa konfigurasi dan koneksi server.';
+        }
+    }
+    if (!$loggedIn) {
+        unset($_SESSION['admin'], $_SESSION['sso_token_hash'], $_SESSION['sso_last_activity']);
+    }
+    return [$loggedIn, $ssoError, $identity, $profilePhotoUrl, $sessionRemaining];
+}
+
+// Pertahankan redirect tanpa loop ketika SSO mengembalikan pengguna tanpa cookie.
+function sso_prepare_login(bool $loggedIn, string &$ssoError): ?string
+{
+    if ($_SERVER['REQUEST_METHOD'] === 'GET' && sso_login_pending()) {
+        sso_mark_login_returned();
+    }
+    try {
+        $ssoLoginUrl = sso_logout_url();
+        if (sso_should_start_login($_SERVER['REQUEST_METHOD'], $loggedIn, $ssoError !== '')) {
+            sso_mark_login_pending();
+            header('Location: ' . $ssoLoginUrl, true, 302);
+            exit();
+        }
+        return $ssoLoginUrl;
+    } catch (Throwable $e) {
+        error_log('SAIMED SSO: ' . $e->getMessage());
+        $ssoError = 'SSO belum tersedia. Periksa konfigurasi dan ekstensi OpenSSL.';
+        return null;
+    }
+}
+
+function sso_handle_login_action(): void
+{
+    try {
+        $loginUrl = sso_logout_url();
+        sso_mark_login_pending();
+        header('Location: ' . $loginUrl, true, 303);
+        exit();
+    } catch (Throwable $e) {
+        error_log('SAIMED SSO: ' . $e->getMessage());
+        $_SESSION['notice'] = 'SSO belum tersedia. Periksa konfigurasi dan ekstensi OpenSSL.';
+        redirect_admin();
+    }
+}
+
+function sso_handle_logout_action(): void
+{
+    try {
+        $logoutUrl = sso_logout_url();
+    } catch (Throwable $e) {
+        error_log('SAIMED SSO: ' . $e->getMessage());
+        $_SESSION['notice'] = 'Logout SSO belum tersedia. Periksa konfigurasi SSO.';
+        redirect_admin();
+    }
+    $_SESSION = [];
+    session_destroy();
+    header('Location: ' . $logoutUrl, true, 303);
+    exit();
 }

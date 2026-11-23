@@ -58,7 +58,7 @@ foreach (['overview' => 'Ringkasan', 'links' => 'Kelola Tautan', 'activity' => '
     expect_dashboard(str_contains($html, 'Sisa sesi') && str_contains($html, '03:05'), 'Sisa sesi harus tampil');
     expect_dashboard(str_contains($html, '&lt;img src=x onerror=alert(1)&gt;'), 'Nama user harus di-escape');
     expect_dashboard(str_contains($html, 'https://example.test/avatar.png?a=1&amp;b=2'), 'URL foto profil harus di-escape');
-    expect_dashboard(str_contains($html, 'assets/dashboard-session.js'), 'Timer harus dimuat');
+    expect_dashboard(str_contains($html, 'assets/js/dashboard-session.js'), 'Timer harus dimuat');
     expect_dashboard(!str_contains($html, '<script>alert(1)</script>'), 'Data tautan tidak boleh menjadi HTML');
     if ($tab === 'overview') {
         expect_dashboard(str_contains($html, 'Aktivitas Harian'), 'Grafik aktivitas harus tersedia');
@@ -66,7 +66,7 @@ foreach (['overview' => 'Ringkasan', 'links' => 'Kelola Tautan', 'activity' => '
         expect_dashboard(str_contains($html, '100% interaksi menggunakan perangkat mobile'), 'Persentase perangkat harus sesuai data');
         expect_dashboard(str_contains($html, '<path d="M '), 'Grafik harus memakai data harian');
         expect_dashboard(str_contains($html, 'role="slider"') && str_contains($html, 'data-points='), 'Grafik harus dapat diakses dan berisi data');
-        expect_dashboard(str_contains($html, 'assets/dashboard-chart.js'), 'Interaksi grafik harus tersedia');
+        expect_dashboard(str_contains($html, 'assets/js/dashboard-chart.js'), 'Interaksi grafik harus tersedia');
         expect_dashboard(str_contains($html, '+100,0% vs periode sebelumnya'), 'Tren kunjungan harus ditampilkan');
         expect_dashboard(str_contains($html, '-50,0% vs periode sebelumnya'), 'Tren klik harus ditampilkan');
         expect_dashboard(str_contains($html, '&lt;tautan&gt; paling diminati'), 'Insight dan escape nama tautan diperlukan');
@@ -92,12 +92,12 @@ $topLink = null;
 ob_start();
 require __DIR__ . '/../templates/admin-dashboard.php';
 $instagramHtml = ob_get_clean();
-expect_dashboard(str_contains($instagramHtml, 'assets/icons/instagram.svg') && str_contains($instagramHtml, '>Instagram</span>'), 'Instagram harus ditampilkan bersama ikonnya');
+expect_dashboard(str_contains($instagramHtml, 'assets/images/icons/instagram.svg') && str_contains($instagramHtml, '>Instagram</span>'), 'Instagram harus ditampilkan bersama ikonnya');
 expect_dashboard(str_contains($instagramHtml, '0,0% kontribusi') && str_contains($instagramHtml, '0 <small>klik</small>'), 'Instagram tanpa klik harus menunjukkan nol');
 expect_dashboard(!str_contains($instagramHtml, 'Instagram paling diminati'), 'Instagram nol klik tidak boleh menjadi insight terpopuler');
 
 // Warna desktop pada legenda dan ring harus sama-sama biru muda.
-$adminCss = file_get_contents(__DIR__ . '/../assets/admin.css');
+$adminCss = file_get_contents(__DIR__ . '/../assets/css/admin.css');
 expect_dashboard(str_contains($adminCss, '.dot-desktop { background: #42a5f5; }'), 'Legenda desktop harus biru muda');
 expect_dashboard(str_contains($adminCss, '#42a5f5 var(--mobile-end) var(--desktop-end)'), 'Segmen desktop harus sama dengan warna legenda');
 

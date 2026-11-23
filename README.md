@@ -1,5 +1,17 @@
 # SAIMED Digital Link Hub
 
+## Struktur proyek dan audit terhadap test-system
+
+Struktur mengikuti pola `test-system` pada bagian yang sepadan, tanpa mengganti fungsi Link Hub:
+
+- `akses.php` di root merangkum logika autentikasi dan otorisasi SSO, status kembali login, timeout, URL login/logout dan informasi profil. `index.php` memuatnya untuk menangani kembali dari SSO, sedangkan `admin.php` memeriksa akses sebelum memproses tindakan, ekspor atau dashboard.
+- `config/koneksi_user.php` menangani database pengguna SSO (nama mengikuti referensi); `config/koneksi.php` tetap khusus untuk database Link Hub dan analytics. Semua konfigurasi environment `SSO_DB_*` tetap sama.
+- `assets/css/`, `assets/js/`, `assets/images/` dan `favicon.ico` di root mengelompokkan aset berdasarkan jenis seperti referensi. URL aset versi lama tetap didukung oleh `.htaccess` dan `router.php` untuk HTML yang masih berada di cache.
+- `index.php` tetap menjadi pintu masuk publik dan routing, karena Link Hub memiliki beranda publik dan endpoint analytics yang tidak ada di test-system. `admin.php` adalah controller dashboard; `app.php` memuat fungsi umum. `includes/` dan `templates/` dipertahankan untuk fungsi analytics, tindakan dan tampilan yang memang khusus aplikasi ini; folder `template/` test-system berisi aset tema pihak ketiga, bukan template PHP yang setara.
+- `api/`, `tests/`, `schema.sql`, dan `vendor/` tetap pada tempatnya karena memiliki fungsi yang berbeda dari kode akses SSO.
+
+Implementasi SSO tidak disalin mentah dari `test-system`: validasi Super Admin, prepared statements, verifikasi token, URL AES-GCM, serta perlindungan timeout tetap dipertahankan. Saat deployment, unggah seluruh struktur baru dan aturan `.htaccess` sekaligus; hapus file lama yang tidak lagi dipakai setelah mencadangkan aplikasi. Pastikan server selain Apache menerapkan pembatasan folder internal dan kompatibilitas URL aset yang setara. Struktur ulang ini tidak membutuhkan migrasi database atau perubahan variabel environment.
+
 ## Database Link Hub dan analytics
 
 Database aplikasi bawaan adalah **`test_saimed_link`** di MySQL lokal (`127.0.0.1:3306`, pengguna `root`, password kosong). Database ini menyimpan tautan dan analytics, terpisah dari database pengguna SSO `test_user`.
@@ -39,7 +51,7 @@ Jika kembali ke halaman admin dengan pesan sesi tidak valid, cari baris terbaru 
 
 ## Pengujian
 
-Jalankan `php tests/smoke.php`, `php tests/db-config.php`, `php tests/dashboard.php`, `php tests/dashboard-chart.php`, `php tests/dashboard-data.php`, `php tests/dashboard-stats.php`, `php tests/dashboard-export.php`, `php tests/admin-no-demo.php`, `php tests/sso.php`, `php tests/sso-profile.php`, `php tests/sso-diagnostics.php`, `php tests/sso-url.php`, `php tests/sso-return.php`, serta `php tests/sso-controller.php <skenario>` untuk setiap skenario `start`, `retry`, `returned`, dan `config`; periksa juga sintaks PHP. Tes SSO memerlukan dependensi Composer; tes URL memerlukan ekstensi OpenSSL.
+Jalankan `php tests/smoke.php`, `php tests/db-config.php`, `php tests/dashboard.php`, `php tests/dashboard-chart.php`, `php tests/dashboard-data.php`, `php tests/dashboard-stats.php`, `php tests/dashboard-export.php`, `php tests/admin-no-demo.php`, `php tests/sso.php`, `php tests/sso-access.php`, `php tests/sso-logout.php`, `php tests/sso-profile.php`, `php tests/sso-diagnostics.php`, `php tests/sso-url.php`, `php tests/sso-return.php`, serta `php tests/sso-controller.php <skenario>` untuk setiap skenario `start`, `retry`, `returned`, dan `config`; periksa juga sintaks PHP. Tes SSO memerlukan dependensi Composer; tes URL memerlukan ekstensi OpenSSL.
 
 ## Laporan analytics
 

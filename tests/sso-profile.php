@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-require __DIR__ . '/../includes/sso.php';
+require __DIR__ . '/../akses.php';
 
 function expect_profile(bool $condition, string $message): void
 {
