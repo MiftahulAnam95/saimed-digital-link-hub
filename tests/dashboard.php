@@ -84,6 +84,18 @@ foreach (['overview' => 'Ringkasan', 'links' => 'Kelola Tautan', 'activity' => '
         expect_dashboard(str_contains($html, 'Log Aktivitas Pengunjung'), 'Log aktivitas harus tersedia');
     }
 }
+// Baris Instagram tersedia meskipun belum ada klik dan tidak mengubah insight.
+$tab = 'overview';
+$clicks = 0;
+$performance = [['title' => 'Instagram', 'icon' => 'instagram', 'count' => 0]];
+$topLink = null;
+ob_start();
+require __DIR__ . '/../templates/admin-dashboard.php';
+$instagramHtml = ob_get_clean();
+expect_dashboard(str_contains($instagramHtml, 'assets/icons/instagram.svg') && str_contains($instagramHtml, '>Instagram</span>'), 'Instagram harus ditampilkan bersama ikonnya');
+expect_dashboard(str_contains($instagramHtml, '0,0% kontribusi') && str_contains($instagramHtml, '0 <small>klik</small>'), 'Instagram tanpa klik harus menunjukkan nol');
+expect_dashboard(!str_contains($instagramHtml, 'Instagram paling diminati'), 'Instagram nol klik tidak boleh menjadi insight terpopuler');
+
 // Warna desktop pada legenda dan ring harus sama-sama biru muda.
 $adminCss = file_get_contents(__DIR__ . '/../assets/admin.css');
 expect_dashboard(str_contains($adminCss, '.dot-desktop { background: #42a5f5; }'), 'Legenda desktop harus biru muda');

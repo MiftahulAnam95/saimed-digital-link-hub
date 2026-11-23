@@ -45,6 +45,15 @@ $daily = [];
 foreach ($allLinks as $link) {
     $performance[$link['key']] = ['title' => $link['title'], 'icon' => $link['icon'], 'count' => 0];
 }
+// Ikon Instagram profil selalu tersedia, walaupun belum menerima klik.
+// Pisahkan kunci internalnya dari tautan CRUD dengan nama kunci yang sama.
+$instagramPerformanceKey = 'social:instagram';
+$eventKeys = array_column($events, 'link_key');
+while (isset($performance[$instagramPerformanceKey]) || in_array($instagramPerformanceKey, $eventKeys, true)) {
+    $instagramPerformanceKey .= ':';
+}
+unset($eventKeys);
+$performance[$instagramPerformanceKey] = ['title' => 'Instagram', 'icon' => 'instagram', 'count' => 0];
 foreach (dashboard_daily_dates($chartDays, $period['today']) as $date) {
     $daily[$date] = ['views' => 0, 'clicks' => 0];
 }
@@ -65,10 +74,12 @@ foreach ($events as $event) {
     }
     if ($isClick) {
         $key = $event['link_key'] ?: '__unattributed__';
-        if (!isset($performance[$key])) {
-            $performance[$key] = ['title' => $event['target_label'] ?: 'Tautan lainnya', 'icon' => in_array($key, ['instagram', 'whatsapp-social'], true) ? ($key === 'instagram' ? 'instagram' : 'whatsapp') : 'link', 'count' => 0];
+        $performanceKey = $event['event_type'] === 'social_click' && $key === 'instagram'
+            ? $instagramPerformanceKey : $key;
+        if (!isset($performance[$performanceKey])) {
+            $performance[$performanceKey] = ['title' => $event['target_label'] ?: 'Tautan lainnya', 'icon' => in_array($key, ['instagram', 'whatsapp-social'], true) ? ($key === 'instagram' ? 'instagram' : 'whatsapp') : 'link', 'count' => 0];
         }
-        $performance[$key]['count']++;
+        $performance[$performanceKey]['count']++;
         $linkClicks[$key] = ($linkClicks[$key] ?? 0) + 1;
     }
 }
