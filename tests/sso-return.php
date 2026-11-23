@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-require __DIR__ . '/../includes/sso-return.php';
+require __DIR__ . '/../akses.php';
 
 function expect_return(bool $condition, string $message): void
 {

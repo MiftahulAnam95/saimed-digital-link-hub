@@ -59,6 +59,6 @@ require __DIR__ . '/../includes/header.php';
     </footer>
     <div class="public-toast" role="status"></div>
 </main>
-<script src="assets/public.js" defer></script>
+<script src="assets/js/public.js" defer></script>
 
 <?php require __DIR__ . '/../includes/footer.php'; ?>

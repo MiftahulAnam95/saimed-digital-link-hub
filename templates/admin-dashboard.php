@@ -18,9 +18,9 @@ $chart = dashboard_chart($daily);
 $adminName = trim((string) ($identity['name'] ?? '')) ?: 'Super Admin';
 $sessionRemaining = max(0, (int) ($sessionRemaining ?? 0));
 $profilePhotoUrl = $profilePhotoUrl ?? null;
-$dashboardScript = __DIR__ . '/../assets/dashboard-session.js';
+$dashboardScript = __DIR__ . '/../assets/js/dashboard-session.js';
 $dashboardScriptVersion = is_readable($dashboardScript) ? substr(hash_file('sha256', $dashboardScript), 0, 12) : '';
-$chartScript = __DIR__ . '/../assets/dashboard-chart.js';
+$chartScript = __DIR__ . '/../assets/js/dashboard-chart.js';
 $chartScriptVersion = is_readable($chartScript) ? substr(hash_file('sha256', $chartScript), 0, 12) : '';
 $deviceTotal = array_sum($devices);
 $mobileCount = (int) ($devices['Mobile'] ?? 0);
@@ -368,6 +368,6 @@ $metricIcons = [
     </div>
 </div>
 
-<?php if ($tab === 'overview'): ?><script src="assets/dashboard-chart.js?v=<?= h($chartScriptVersion) ?>" defer></script><?php endif; ?>
-<script src="assets/dashboard-session.js?v=<?= h($dashboardScriptVersion) ?>" defer></script>
+<?php if ($tab === 'overview'): ?><script src="assets/js/dashboard-chart.js?v=<?= h($chartScriptVersion) ?>" defer></script><?php endif; ?>
+<script src="assets/js/dashboard-session.js?v=<?= h($dashboardScriptVersion) ?>" defer></script>
 <?php require __DIR__ . '/../includes/footer.php'; ?>

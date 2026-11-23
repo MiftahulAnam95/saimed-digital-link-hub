@@ -7,33 +7,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     check_csrf();
     $action = $_POST['action'] ?? '';
     if ($action === 'sso-login' && !$loggedIn) {
-        try {
-            $loginUrl = sso_logout_url();
-            sso_mark_login_pending();
-            header('Location: ' . $loginUrl, true, 303);
-            exit();
-        } catch (Throwable $e) {
-            error_log('SAIMED SSO: ' . $e->getMessage());
-            $_SESSION['notice'] = 'SSO belum tersedia. Periksa konfigurasi dan ekstensi OpenSSL.';
-            redirect_admin();
-        }
+        sso_handle_login_action();
     }
     if (!$loggedIn) {
         http_response_code(403);
         exit('Akses ditolak');
     }
     if ($action === 'logout') {
-        try {
-            $logoutUrl = sso_logout_url();
-        } catch (Throwable $e) {
-            error_log('SAIMED SSO: ' . $e->getMessage());
-            $_SESSION['notice'] = 'Logout SSO belum tersedia. Periksa konfigurasi SSO.';
-            redirect_admin();
-        }
-        $_SESSION = [];
-        session_destroy();
-        header('Location: ' . $logoutUrl, true, 303);
-        exit();
+        sso_handle_logout_action();
     }
     if (!in_array($action, ['save', 'add', 'delete'], true)) {
         $_SESSION['notice'] = 'Tindakan tidak dikenal.';

@@ -1,4 +1,10 @@
 RewriteEngine On
+# Kompatibilitas URL aset versi lama (termasuk HTML yang masih tersimpan di cache).
+RewriteRule ^assets/(style|admin)\.css$ assets/css/$1.css [L,NC]
+RewriteRule ^assets/(public|dashboard-chart|dashboard-session)\.js$ assets/js/$1.js [L,NC]
+RewriteRule ^assets/icons/([a-z0-9-]+\.svg)$ assets/images/icons/$1 [L,NC]
+RewriteRule ^assets/saimed-logo\.png$ assets/images/saimed-logo.png [L,NC]
+RewriteRule ^assets/favicon\.ico$ favicon.ico [L,NC]
 # Folder internal hanya boleh dimuat oleh PHP, bukan diakses langsung.
 RewriteRule ^(config|includes|templates|tests|vendor)/ - [F,L,NC]
 RewriteCond %{REQUEST_FILENAME} !-f
