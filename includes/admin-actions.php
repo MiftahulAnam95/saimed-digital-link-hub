@@ -36,18 +36,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if ($action === 'add') {
                 $key = trim(preg_replace('/[^a-z0-9]+/', '-', strtolower($title)), '-');
                 $key = $key ?: 'tautan';
-                $sortOrder = (int) $db->query('SELECT COALESCE(MAX(sort_order), 0) + 1 FROM links')->fetchColumn();
+                $sortOrder = (int) $db->query('SELECT COALESCE(MAX(sort_order), 0) + 1 AS next_order FROM links')->fetch_assoc()['next_order'];
                 $stmt = $db->prepare(
                     'INSERT INTO links (`key`, title, url, icon, sort_order)
-                     VALUES (:key, :title, :url, :icon, :sort_order)'
+                     VALUES (?, ?, ?, ?, ?)'
                 );
                 $stmt->execute([
-                    'key' =>
-                        substr($key, 0, 38) . '-' . bin2hex(random_bytes(3)),
-                    'title' => $title,
-                    'url' => $url,
-                    'icon' => $icon,
-                    'sort_order' => $sortOrder,
+                    substr($key, 0, 38) . '-' . bin2hex(random_bytes(3)),
+                    $title, $url, $icon, $sortOrder,
                 ]);
             } else {
                 $id = filter_var($_POST['id'] ?? null, FILTER_VALIDATE_INT, [
@@ -58,25 +54,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 }
                 $stmt = $db->prepare(
                     'UPDATE links
-                     SET title = :title, url = :url, icon = :icon, sort_order = :sort_order,
-                         is_active = :active, featured = :featured,
-                         updated_at = NOW()
-                     WHERE id = :id',
+                     SET title = ?, url = ?, icon = ?, sort_order = ?,
+                         is_active = ?, featured = ?, updated_at = NOW()
+                     WHERE id = ?'
                 );
                 $stmt->execute([
-                    'title' => $title,
-                    'url' => $url,
-                    'icon' => $icon,
-                    'sort_order' => (int) ($_POST['sort_order'] ?? 0),
-                    'active' => isset($_POST['is_active']) ? 1 : 0,
-                    'featured' => isset($_POST['featured']) ? 1 : 0,
-                    'id' => $id,
+                    $title, $url, $icon, (int) ($_POST['sort_order'] ?? 0),
+                    isset($_POST['is_active']) ? 1 : 0,
+                    isset($_POST['featured']) ? 1 : 0,
+                    $id,
                 ]);
                 // MySQL dapat mengembalikan 0 jika nilai tidak berubah.
-                if (!$stmt->rowCount()) {
-                    $check = $db->prepare('SELECT id FROM links WHERE id = :id');
-                    $check->execute(['id' => $id]);
-                    if (!$check->fetch()) {
+                if (!$stmt->affected_rows) {
+                    $check = $db->prepare('SELECT id FROM links WHERE id = ?');
+                    $check->execute([$id]);
+                    if (!$check->get_result()->fetch_assoc()) {
                         throw new InvalidArgumentException('Tautan tidak ditemukan.');
                     }
                 }
@@ -89,16 +81,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if (!$id) {
                 throw new InvalidArgumentException('ID tidak valid.');
             }
-            $stmt = $db->prepare('DELETE FROM links WHERE id=:id');
-            $stmt->execute(['id' => $id]);
+            $stmt = $db->prepare('DELETE FROM links WHERE id = ?');
+            $stmt->execute([$id]);
             $_SESSION['notice'] = 'Tautan berhasil dihapus.';
         } else {
             throw new InvalidArgumentException('Tindakan tidak dikenal.');
         }
     } catch (Throwable $e) {
-        if (isset($db) && $db->inTransaction()) {
-            $db->rollBack();
-        }
         error_log('SAIMED admin: ' . $e->getMessage());
         $_SESSION['notice'] =
             $e instanceof InvalidArgumentException

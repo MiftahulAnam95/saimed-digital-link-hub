@@ -8,22 +8,17 @@ require __DIR__ . '/sso.php';
 
 class AccessTestDatabase extends SsoTestDatabase
 {
-    public function prepare(string $query, array $options = []): PDOStatement|false
+    public function prepare(string $query): SsoTestStatement
     {
         if (str_contains($query, 'FROM photo_profile')) {
-            return new AccessPhotoStatement();
+            return new AccessPhotoStatement($this);
         }
-        return parent::prepare($query, $options);
+        return parent::prepare($query);
     }
 }
-class AccessPhotoStatement extends PDOStatement
+class AccessPhotoStatement extends SsoTestStatement
 {
-    public function __construct() {}
-    public function execute(?array $params = null): bool { return true; }
-    public function fetch(int $mode = PDO::FETCH_DEFAULT, int $cursorOrientation = PDO::FETCH_ORI_NEXT, int $cursorOffset = 0): mixed
-    {
-        return ['nama_file' => 'avatar.png'];
-    }
+    public function fetch_assoc(): mixed { return ['nama_file' => 'avatar.png']; }
 }
 
 session_name('SAIMEDACCESSTEST');

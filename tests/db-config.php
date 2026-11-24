@@ -7,6 +7,9 @@ function expect_db_config(bool $ok, string $message): void { if (!$ok) throw new
 foreach (['DB_HOST', 'DB_PORT', 'DB_DATABASE', 'DB_USERNAME', 'DB_PASSWORD', 'DATABASE_URL'] as $name) putenv($name);
 $config = db_config();
 expect_db_config($config === ['host' => '127.0.0.1', 'port' => '3306', 'database' => 'test_saimed_link', 'username' => 'root', 'password' => ''], 'Konfigurasi bawaan tidak sesuai');
+putenv('DB_DATABASE=test-saimed-link');
+expect_db_config(db_config()['database'] === 'test-saimed-link', 'Nama database dengan tanda hubung harus didukung');
+putenv('DB_DATABASE');
 putenv('DB_HOST=db.example');
 putenv('DB_PORT=3307');
 putenv('DB_DATABASE=custom_db');

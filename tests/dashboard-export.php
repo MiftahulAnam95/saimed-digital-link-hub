@@ -6,16 +6,17 @@ require __DIR__ . '/../includes/links.php';
 $_GET = ['days' => '90'];
 class ExportTestDb {
     public function prepare(string $sql): ExportTestStatement {
-        if (!str_contains($sql, 'created_at >= :start') || !str_contains($sql, 'created_at < :end') || !str_contains($sql, 'is_demo = 0')) throw new RuntimeException('Filter ekspor hilang');
+        if (!str_contains($sql, 'created_at >= ?') || !str_contains($sql, 'created_at < ?') || !str_contains($sql, 'is_demo = 0')) throw new RuntimeException('Filter ekspor hilang');
         return new ExportTestStatement();
     }
 }
 class ExportTestStatement {
     private int $index = 0;
     public function execute(array $params): void {
-        if (!isset($params['start'], $params['end'])) throw new RuntimeException('Parameter ekspor hilang');
+        if (!isset($params[0], $params[1]) || $params[0] <= $params[1]) throw new RuntimeException('Parameter ekspor hilang');
     }
-    public function fetch(): mixed {
+    public function get_result(): self { return $this; }
+    public function fetch_assoc(): mixed {
         if ($this->index++) return false;
         return ['created_at' => '2026-01-01 12:00:00', 'event_type' => 'link_click', 'target_label' => '=SUM(1;2)', 'device' => 'Mobile', 'is_demo' => 0];
     }

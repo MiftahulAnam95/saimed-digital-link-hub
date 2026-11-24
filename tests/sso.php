@@ -15,33 +15,28 @@ function expect_sso(bool $value, string $message): void
 }
 
 // Simulasi database: tidak memerlukan atau mengubah database pengguna SSO asli.
-class SsoTestDatabase extends PDO
+class SsoTestDatabase
 {
     public array $row = [];
     public array $parameters = [];
-    public function __construct() {}
-    public function prepare(string $query, array $options = []): PDOStatement|false
+    public function prepare(string $query): SsoTestStatement
     {
-        expect_sso(str_contains($query, ':token') && str_contains($query, ':exact_token')
-            && str_contains($query, ':website'), 'Query harus menggunakan parameter');
+        expect_sso(substr_count($query, '?') === 3, 'Query harus menggunakan tiga parameter');
         expect_sso(str_contains($query, 'ut.id_user = u.id_user'), 'Pemilik token harus cocok dengan pemilik akses');
-        expect_sso(str_contains($query, 'BINARY ut.token = BINARY :exact_token'), 'Token harus cocok secara case-sensitive');
+        expect_sso(str_contains($query, 'BINARY ut.token = BINARY ?'), 'Token harus cocok secara case-sensitive');
         return new SsoTestStatement($this);
     }
 }
-class SsoTestStatement extends PDOStatement
+class SsoTestStatement
 {
-    private SsoTestDatabase $database;
-    public function __construct(SsoTestDatabase $database) { $this->database = $database; }
-    public function execute(?array $params = null): bool
+    public function __construct(private SsoTestDatabase $database) {}
+    public function execute(array $params): bool
     {
-        $this->database->parameters = $params ?? [];
+        $this->database->parameters = $params;
         return true;
     }
-    public function fetch(int $mode = PDO::FETCH_DEFAULT, int $cursorOrientation = PDO::FETCH_ORI_NEXT, int $cursorOffset = 0): mixed
-    {
-        return $this->database->row ?: false;
-    }
+    public function get_result(): self { return $this; }
+    public function fetch_assoc(): mixed { return $this->database->row ?: null; }
 }
 
 $db = new SsoTestDatabase();
@@ -59,7 +54,7 @@ $db->row = [
 $website = 'http://localhost/saimed-digital-link-hub';
 $identity = sso_authenticate($db, $token, $website);
 expect_sso($identity['id'] === '12' && $identity['name'] === 'Admin', 'Identitas SSO tidak sesuai');
-expect_sso($db->parameters === ['token' => $token, 'exact_token' => $token, 'website' => $website], 'Parameter query tidak sesuai');
+expect_sso($db->parameters === [$token, $token, $website], 'Parameter query tidak sesuai');
 expect_sso($identity['expires_at'] === $payload['exp'], 'Waktu kedaluwarsa harus memakai batas terdekat');
 $earlierJwt = JWT::encode(['exp' => time() + 60], $key, 'HS256');
 expect_sso(sso_authenticate($db, $earlierJwt, $website)['expires_at'] <= time() + 60, 'Kedaluwarsa JWT harus membatasi sesi');

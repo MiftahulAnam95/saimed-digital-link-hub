@@ -40,7 +40,7 @@ function sso_reject(string $reason): ?array
 }
 
 /** Validasi token dan akses pada setiap request, termasuk setelah login. */
-function sso_authenticate(PDO $database, string $token, string $website): ?array
+function sso_authenticate(object $database, string $token, string $website): ?array
 {
     if ($token === '' || strlen($token) > 8192) {
         return sso_reject('format_token');
@@ -62,11 +62,11 @@ function sso_authenticate(PDO $database, string $token, string $website): ?array
          INNER JOIN website_management w ON ua.id_website = w.id_website
          INNER JOIN user u ON ua.id_user = u.id_user AND ut.id_user = u.id_user
          INNER JOIN user_role ur ON u.id_user_role = ur.id_user_role
-         WHERE ut.token = :token AND BINARY ut.token = BINARY :exact_token
-           AND w.url_website = :website LIMIT 1'
+         WHERE ut.token = ? AND BINARY ut.token = BINARY ?
+           AND w.url_website = ? LIMIT 1'
     );
-    $stmt->execute(['token' => $token, 'exact_token' => $token, 'website' => $website]);
-    $row = $stmt->fetch();
+    $stmt->execute([$token, $token, $website]);
+    $row = $stmt->get_result()->fetch_assoc();
     if (!$row) {
         return sso_reject('token_atau_akses_website_tidak_ditemukan');
     }
@@ -120,12 +120,12 @@ function sso_authenticate(PDO $database, string $token, string $website): ?array
 }
 
 /** Foto profil adalah data opsional; kegagalannya tidak boleh menggagalkan login. */
-function sso_profile_photo_url(PDO $database, string $userId): ?string
+function sso_profile_photo_url(object $database, string $userId): ?string
 {
     try {
-        $stmt = $database->prepare('SELECT nama_file FROM photo_profile WHERE id_user = :id_user LIMIT 1');
-        $stmt->execute(['id_user' => $userId]);
-        $row = $stmt->fetch();
+        $stmt = $database->prepare('SELECT nama_file FROM photo_profile WHERE id_user = ? LIMIT 1');
+        $stmt->execute([$userId]);
+        $row = $stmt->get_result()->fetch_assoc();
         $filename = $row['nama_file'] ?? null;
         if (!is_string($filename) || $filename === '' || $filename === '.' || $filename === '..'
             || strpbrk($filename, '/\\') !== false || preg_match('~[\x00-\x1f\x7f]~', $filename)) {
@@ -187,7 +187,7 @@ function sso_should_start_login(string $method, bool $loggedIn, bool $hasError):
 }
 
 // Dipanggil untuk setiap request admin sebelum tindakan atau data dashboard.
-function sso_check_admin_access(?PDO $database = null): array
+function sso_check_admin_access(?object $database = null): array
 {
     $autoload = __DIR__ . '/vendor/autoload.php';
     if (is_file($autoload)) {
