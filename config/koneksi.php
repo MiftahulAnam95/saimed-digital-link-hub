@@ -2,72 +2,42 @@
 
 declare(strict_types=1);
 
-/** Memuat konfigurasi database Link Hub tanpa membuka koneksi. */
+require_once __DIR__ . '/../includes/database-config.php';
+
+// Pengaturan database Link Hub untuk localhost.
 function db_config(): array
 {
-    // Nilai bawaan cocok untuk instalasi XAMPP lokal. Atur variabel ini di server produksi.
-    $host = getenv('DB_HOST') ?: '127.0.0.1';
-    $port = getenv('DB_PORT') ?: '3306';
-    $database = getenv('DB_DATABASE') ?: 'test_saimed_link';
-    $username = getenv('DB_USERNAME');
-    $password = getenv('DB_PASSWORD');
-    $username = $username === false ? 'root' : $username;
-    $password = $password === false ? '' : $password;
+    $host = '127.0.0.1';
+    $username = 'root';
+    $password = '';
+    $database = 'test_saimed_link';
+    $port = '3306';
 
-    // DATABASE_URL juga didukung jika penyedia hosting menyediakan URL koneksi.
-    $databaseUrl = getenv('DATABASE_URL');
-    if ($databaseUrl) {
-        $parts = parse_url($databaseUrl);
-        if (!$parts || ($parts['scheme'] ?? '') !== 'mysql'
-            || empty($parts['host']) || empty($parts['path'])) {
-            throw new RuntimeException('DATABASE_URL harus berupa URL MySQL yang valid');
-        }
-        $host = $parts['host'];
-        $port = (string) ($parts['port'] ?? 3306);
-        $database = rawurldecode(ltrim($parts['path'], '/'));
-        $username = rawurldecode($parts['user'] ?? '');
-        $password = rawurldecode($parts['pass'] ?? '');
-    }
-
-    if (!preg_match('/^[a-zA-Z0-9_.:-]+$/', $host)
-        || !preg_match('/^[a-zA-Z0-9_$-]+$/', $database)
-        || !preg_match('/^[0-9]+$/', (string) $port) || (int) $port < 1 || (int) $port > 65535) {
-        throw new RuntimeException('Konfigurasi MySQL tidak valid');
-    }
-
-    return [
-        'host' => $host,
-        'port' => (string) $port,
-        'database' => $database,
-        'username' => $username,
-        'password' => $password,
-    ];
+    // Pengaturan server (jika ada) dapat mengganti nilai localhost ini.
+    return database_config(compact('host', 'username', 'password', 'database', 'port'));
 }
 
-/** Membuka koneksi MySQL sekali untuk setiap permintaan. */
-function db(): PDO
+// Buka koneksi ketika dibutuhkan agar halaman publik tetap memiliki fallback.
+function db(): mysqli
 {
-    static $connection = null;
-    if ($connection instanceof PDO) {
-        return $connection;
+    static $koneksi = null;
+    if ($koneksi instanceof mysqli) {
+        return $koneksi;
     }
+
     $config = db_config();
     $host = $config['host'];
-    $port = $config['port'];
-    $database = $config['database'];
     $username = $config['username'];
     $password = $config['password'];
+    $database = $config['database'];
+    $port = (int) $config['port'];
 
-    $dsn = 'mysql:host=' . $host . ';port=' . $port
-        . ';dbname=' . $database . ';charset=utf8mb4';
-    $connection = new PDO($dsn, $username, $password, [
-        PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-        PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-        PDO::ATTR_EMULATE_PREPARES => false,
-    ]);
+    // Kesalahan ditangani pemanggil agar beranda tetap bisa menampilkan fallback.
+    mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
+    $baru = mysqli_connect($host, $username, $password, $database, $port);
+    mysqli_set_charset($baru, 'utf8mb4');
+    mysqli_query($baru, "SET time_zone = '+00:00'");
+    $koneksi = $baru;
 
-    // Waktu analytics disimpan dalam UTC; dashboard menampilkannya sebagai WIB.
-    $connection->exec("SET time_zone = '+00:00'");
-
-    return $connection;
+    return $koneksi;
 }

@@ -61,7 +61,7 @@ function links(bool $active = false): array
                     ($active ? 'WHERE is_active = true ' : '') .
                     'ORDER BY sort_order, id',
             )
-            ->fetchAll();
+            ->fetch_all(MYSQLI_ASSOC);
     } catch (Throwable $e) {
         error_log('SAIMED database: ' . $e->getMessage());
         return fallback_links();

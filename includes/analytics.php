@@ -57,13 +57,13 @@ function clean($value, int $maxLength): ?string
 }
 
 /** Endpoint untuk mencatat kunjungan dan klik dari halaman publik. */
-function track(): void
+function track(?string $rawBody = null): void
 {
     if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
         json_response(['error' => 'Metode tidak diizinkan'], 405);
     }
 
-    $body = json_decode(file_get_contents('php://input'), true);
+    $body = json_decode($rawBody ?? file_get_contents('php://input'), true);
     $allowedEvents = ['view', 'link_click', 'social_click', 'link_action'];
     if (!is_array($body) || !in_array($body['eventType'] ?? null, $allowedEvents, true)) {
         json_response(['ok' => false, 'error' => 'Jenis event tidak valid'], 400);
@@ -82,21 +82,20 @@ function track(): void
             (event_type, link_id, link_key, target_label, visitor_id, path, referrer,
              user_agent, device, browser, os)
             VALUES
-            (:event, (SELECT id FROM links WHERE `key` = :lookup), :key, :label, :visitor,
-             :path, :referrer, :ua, :device, :browser, :os)';
+            (?, (SELECT id FROM links WHERE `key` = ?), ?, ?, ?, ?, ?, ?, ?, ?, ?)';
         $statement = db()->prepare($sql);
         $statement->execute([
-            'event' => $body['eventType'],
-            'lookup' => $linkKey,
-            'key' => $linkKey,
-            'label' => clean($body['targetLabel'] ?? null, 180),
-            'visitor' => clean($body['visitorId'] ?? null, 120) ?? $fallbackId,
-            'path' => clean($body['path'] ?? null, 240) ?? '/',
-            'referrer' => clean($body['referrer'] ?? null, 500),
-            'ua' => $userAgent,
-            'device' => $device,
-            'browser' => $browser,
-            'os' => $os,
+            $body['eventType'],
+            $linkKey,
+            $linkKey,
+            clean($body['targetLabel'] ?? null, 180),
+            clean($body['visitorId'] ?? null, 120) ?? $fallbackId,
+            clean($body['path'] ?? null, 240) ?? '/',
+            clean($body['referrer'] ?? null, 500),
+            $userAgent,
+            $device,
+            $browser,
+            $os,
         ]);
 
         json_response(['ok' => true, 'tracked' => true]);

@@ -17,15 +17,19 @@ class StatsStatement {
     private array $results = [];
     public function __construct(private array $events, private string $sql) {}
     public function execute(array $params): void {
-        $filtered = array_values(array_filter($this->events, static fn($e) => !$e['is_demo'] && $e['created_at'] < $params['end'] && (!isset($params['start']) || $e['created_at'] >= $params['start'])));
-        if (str_contains($this->sql, 'GROUP BY')) {
+        $grouped = str_contains($this->sql, 'GROUP BY');
+        $start = $grouped ? $params[0] : ($params[1] ?? null);
+        $end = $grouped ? $params[1] : $params[0];
+        $filtered = array_values(array_filter($this->events, static fn($e) => !$e['is_demo'] && $e['created_at'] < $end && ($start === null || $e['created_at'] >= $start)));
+        if ($grouped) {
             $counts = [];
             foreach ($filtered as $event) $counts[$event['event_type']] = ($counts[$event['event_type']] ?? 0) + 1;
             $this->results = [];
             foreach ($counts as $type => $count) $this->results[] = ['event_type' => $type, 'total' => $count];
         } else $this->results = $filtered;
     }
-    public function fetchAll(): array { return $this->results; }
+    public function get_result(): self { return $this; }
+    public function fetch_all(int $mode): array { return $this->results; }
 }
 function db(): StatsDatabase { global $testDb; return $testDb; }
 function event_at(int $daysAgo, string $type, ?string $key, string $label, bool $demo = false): array {

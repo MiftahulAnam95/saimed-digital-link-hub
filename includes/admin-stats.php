@@ -13,19 +13,19 @@ $previousViews = 0;
 $previousClicks = 0;
 $dbError = false;
 try {
-    $sql = 'SELECT * FROM analytics_events WHERE is_demo = 0 AND created_at < :end';
-    $params = ['end' => $period['end']];
+    $sql = 'SELECT * FROM analytics_events WHERE is_demo = 0 AND created_at < ?';
+    $params = [$period['end']];
     if ($period['start'] !== null) {
-        $sql .= ' AND created_at >= :start';
-        $params['start'] = $period['start'];
+        $sql .= ' AND created_at >= ?';
+        $params[] = $period['start'];
     }
     $stmt = db()->prepare($sql . ' ORDER BY created_at DESC, id DESC');
     $stmt->execute($params);
-    $events = $stmt->fetchAll();
+    $events = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
     if ($period['previous_start'] !== null) {
-        $stmt = db()->prepare('SELECT event_type, COUNT(*) AS total FROM analytics_events WHERE is_demo = 0 AND created_at >= :start AND created_at < :end GROUP BY event_type');
-        $stmt->execute(['start' => $period['previous_start'], 'end' => $period['start']]);
-        foreach ($stmt->fetchAll() as $row) {
+        $stmt = db()->prepare('SELECT event_type, COUNT(*) AS total FROM analytics_events WHERE is_demo = 0 AND created_at >= ? AND created_at < ? GROUP BY event_type');
+        $stmt->execute([$period['previous_start'], $period['start']]);
+        foreach ($stmt->get_result()->fetch_all(MYSQLI_ASSOC) as $row) {
             if ($row['event_type'] === 'view') $previousViews += (int) $row['total'];
             if (in_array($row['event_type'], ['link_click', 'social_click'], true)) $previousClicks += (int) $row['total'];
         }

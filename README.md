@@ -18,6 +18,8 @@ Database aplikasi bawaan adalah **`test_saimed_link`** di MySQL lokal (`127.0.0.
 
 Untuk instalasi baru, buat database `test_saimed_link` di phpMyAdmin, pilih database tersebut, lalu impor `schema.sql`. Jika sebelumnya memakai database `saimed` dan ingin mempertahankan data, cadangkan database lama terlebih dahulu. Hentikan sementara pencatatan/perubahan data, ekspor struktur dan data dari database lama, lalu impor ke `test_saimed_link`. Pastikan file ekspor tidak memaksa `CREATE DATABASE` atau `USE` ke nama lama. Verifikasi tabel, relasi dan jumlah data sebelum kembali menjalankan aplikasi. Jangan hapus database lama sampai hasilnya dipastikan benar; perubahan kode ini tidak memindahkan atau menghapus data secara otomatis. Untuk database baru yang sudah diimpor dari database lama, tidak perlu mengimpor `schema.sql` lagi.
 
+Koneksi Link Hub dan SSO menggunakan MySQLi, bukan PDO. Nilai localhost ditulis di `config/koneksi.php` dan `config/koneksi_user.php`; koneksi baru dibuka saat diperlukan agar halaman publik masih dapat menampilkan fallback ketika database bermasalah. Kesalahan tidak ditampilkan secara rinci kepada pengunjung. Query yang menerima input menggunakan prepared statement MySQLi dengan placeholder `?`.
+
 Nama dan koneksi dapat diatur melalui `DB_DATABASE`, `DB_HOST`, `DB_PORT`, `DB_USERNAME`, dan `DB_PASSWORD`. Jika `DATABASE_URL` disetel, nilai URL tersebut **menggantikan** konfigurasi `DB_*`, termasuk nama database. Bila sebelumnya ada `DB_DATABASE=saimed` atau `DATABASE_URL` yang menunjuk ke `saimed`, perbarui pengaturan server tersebut dan restart Apache. Koneksi SSO `SSO_DB_*` tidak berubah.
 
 ## Konfigurasi SSO
@@ -26,7 +28,7 @@ Login admin menggunakan cookie `jwt_token_test` dan database pengguna SSO. Akun 
 
 Aplikasi mengirim URL tujuan yang dienkripsi AES-256-GCM ke `logout.php` pada server `test-sso`. Formatnya adalah base64url dari nonce 12 byte, tag 16 byte, dan ciphertext, sesuai fungsi `decrypt()` di server tersebut.
 
-Pastikan PHP memiliki ekstensi `openssl` dan `pdo_mysql` serta dependensi Composer tersedia. Atur variabel berikut di environment server aplikasi:
+Pastikan PHP 8.1 atau lebih baru memiliki ekstensi `openssl` dan `mysqli` dengan driver mysqlnd (untuk `get_result()`), serta dependensi Composer tersedia. XAMPP umumnya sudah menyertakan mysqlnd. Vendor bawaan repository memiliki pemeriksaan PHP 8.2; untuk PHP 8.1 jalankan `composer install` sesuai lingkungan atau gunakan PHP 8.2+. Atur variabel berikut di environment server aplikasi:
 
 - `SSO_JWT_SECRET_KEY` **wajib**: sama persis dengan `$jwt_key` yang dipakai `JWT::encode()` di test-sso (pada kode yang diberikan, `JWT_SECRET_KEY` di `.env`).
 - `SSO_AES_SECRET_KEY` **wajib**: nilai yang sama persis dengan `AES_SECRET_KEY` di `.env` server `test-sso`, sepanjang 32 byte. `URL_KEY` tidak digunakan oleh implementasi `decrypt()` tersebut.
@@ -51,7 +53,7 @@ Jika kembali ke halaman admin dengan pesan sesi tidak valid, cari baris terbaru 
 
 ## Pengujian
 
-Jalankan `php tests/smoke.php`, `php tests/db-config.php`, `php tests/dashboard.php`, `php tests/dashboard-chart.php`, `php tests/dashboard-data.php`, `php tests/dashboard-stats.php`, `php tests/dashboard-export.php`, `php tests/admin-no-demo.php`, `php tests/sso.php`, `php tests/sso-access.php`, `php tests/sso-logout.php`, `php tests/sso-profile.php`, `php tests/sso-diagnostics.php`, `php tests/sso-url.php`, `php tests/sso-return.php`, serta `php tests/sso-controller.php <skenario>` untuk setiap skenario `start`, `retry`, `returned`, dan `config`; periksa juga sintaks PHP. Tes SSO memerlukan dependensi Composer; tes URL memerlukan ekstensi OpenSSL.
+Jalankan `php tests/smoke.php`, `php tests/db-config.php`, `php tests/dashboard.php`, `php tests/dashboard-chart.php`, `php tests/dashboard-data.php`, `php tests/dashboard-stats.php`, `php tests/dashboard-export.php`, `php tests/admin-no-demo.php`, `php tests/admin-actions-mysqli.php`, `php tests/analytics-track.php <skenario>` untuk `valid`, `null`, `invalid`, dan `method`, `php tests/sso.php`, `php tests/sso-access.php`, `php tests/sso-logout.php`, `php tests/sso-profile.php`, `php tests/sso-diagnostics.php`, `php tests/sso-url.php`, `php tests/sso-return.php`, serta `php tests/sso-controller.php <skenario>` untuk setiap skenario `start`, `retry`, `returned`, dan `config`; periksa juga sintaks PHP. Tes SSO memerlukan dependensi Composer; tes URL memerlukan ekstensi OpenSSL.
 
 ## Laporan analytics
 
