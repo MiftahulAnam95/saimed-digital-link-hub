@@ -159,7 +159,7 @@ $metricIcons = [
             </div>
 
         <?php if ($notice): ?>
-            <p class="notice" role="status"><?= h($notice) ?></p>
+            <p class="notice" role="status" id="dashboard-notice" data-notice-type="<?= h(in_array($noticeType ?? '', ['success', 'error'], true) ? $noticeType : '') ?>"><?= h($notice) ?></p>
         <?php endif; ?>
         <?php if ($dbError): ?>
             <p class="notice error">Database tidak tersedia. Periksa konfigurasi MySQL dan jalankan schema.sql.</p>
@@ -342,41 +342,77 @@ $metricIcons = [
                         </form>
                     </details>
                 </noscript>
-                <?php foreach ($allLinks as $link): ?>
-                    <div class="editor">
-                        <form method="post" enctype="multipart/form-data" class="edit-form">
-                            <?php token_input(); ?>
-                            <input type="hidden" name="action" value="save">
-                            <input type="hidden" name="id" value="<?= h($link['id']) ?>">
-                            <label>Nama
-                                <input name="title" value="<?= h($link['title']) ?>" maxlength="80" required>
-                            </label>
-                            <label>URL
-                                <input name="url" value="<?= h($link['url']) ?>" required>
-                            </label>
-                            <label>Logo/Icon (opsional: ganti)
-                                <span class="edit-link-icon"><?= icon($link['icon']) ?><span>Logo saat ini</span></span>
-                                <input name="icon_file" type="file" accept="image/png,image/jpeg">
-                            </label>
-                            <label>Urutan
-                                <input name="sort_order" type="number" value="<?= h($link['sort_order']) ?>">
-                            </label>
-                            <label class="check">
-                                <input type="checkbox" name="is_active" <?= boolval_db($link['is_active']) ? 'checked' : '' ?>> Aktif
-                            </label>
-                            <label class="check">
-                                <input type="checkbox" name="featured" <?= boolval_db($link['featured']) ? 'checked' : '' ?>> Unggulan
-                            </label>
-                            <button class="button primary">Simpan</button>
-                        </form>
-                        <form method="post" onsubmit="return confirm('Hapus tautan ini?')">
-                            <?php token_input(); ?>
-                            <input type="hidden" name="action" value="delete">
-                            <input type="hidden" name="id" value="<?= h($link['id']) ?>">
-                            <button class="button danger">Hapus</button>
-                        </form>
+                <div class="links-table-wrap">
+                    <table id="links-table" class="display links-table">
+                        <thead><tr><th>Nama</th><th>URL</th><th>Urutan</th><th>Status</th><th>Unggulan</th><th>Aksi</th></tr></thead>
+                        <tbody>
+                        <?php foreach ($allLinks as $link): ?>
+                            <tr>
+                                <td><span class="links-name"><?= icon($link['icon']) ?><strong><?= h($link['title']) ?></strong></span></td>
+                                <td><span class="links-url" title="<?= h($link['url']) ?>"><?= h($link['url']) ?></span></td>
+                                <td><?= h($link['sort_order']) ?></td>
+                                <td><span class="link-status <?= boolval_db($link['is_active']) ? 'is-active' : 'is-inactive' ?>"><?= boolval_db($link['is_active']) ? 'Aktif' : 'Nonaktif' ?></span></td>
+                                <td><?= boolval_db($link['featured']) ? 'Ya' : 'Tidak' ?></td>
+                                <td>
+                                <?php if ((int) $link['id'] > 0): ?>
+                                    <div class="link-row-actions">
+                                        <button type="button" class="button edit-link-trigger" aria-haspopup="dialog" aria-controls="edit-link-dialog" hidden
+                                            data-id="<?= h($link['id']) ?>" data-title="<?= h($link['title']) ?>" data-url="<?= h($link['url']) ?>"
+                                            data-order="<?= h($link['sort_order']) ?>" data-active="<?= boolval_db($link['is_active']) ? '1' : '0' ?>" data-featured="<?= boolval_db($link['featured']) ? '1' : '0' ?>">Edit</button>
+                                        <form method="post" class="delete-link-form" onsubmit="return confirm('Hapus tautan ini?')">
+                                            <?php token_input(); ?>
+                                            <input type="hidden" name="action" value="delete">
+                                            <input type="hidden" name="id" value="<?= h($link['id']) ?>">
+                                            <button class="button danger" type="submit">Hapus</button>
+                                        </form>
+                                    </div>
+                                    <noscript>
+                                        <details class="edit-link-fallback"><summary>Edit</summary>
+                                            <form method="post" enctype="multipart/form-data" class="add-link-form">
+                                                <?php token_input(); ?>
+                                                <input type="hidden" name="action" value="save"><input type="hidden" name="id" value="<?= h($link['id']) ?>">
+                                                <label>Nama<input name="title" value="<?= h($link['title']) ?>" maxlength="80" required></label>
+                                                <label>URL<input name="url" value="<?= h($link['url']) ?>" required></label>
+                                                <label>Logo/Icon (opsional: ganti)<input name="icon_file" type="file" accept="image/png,image/jpeg"></label>
+                                                <label>Urutan<input name="sort_order" type="number" value="<?= h($link['sort_order']) ?>"></label>
+                                                <label class="check"><input type="checkbox" name="is_active" <?= boolval_db($link['is_active']) ? 'checked' : '' ?>> Aktif</label>
+                                                <label class="check"><input type="checkbox" name="featured" <?= boolval_db($link['featured']) ? 'checked' : '' ?>> Unggulan</label>
+                                                <button class="button primary" type="submit">Simpan</button>
+                                            </form>
+                                        </details>
+                                    </noscript>
+                                <?php else: ?>
+                                    <span class="links-unavailable">Tidak tersedia</span>
+                                <?php endif; ?>
+                                </td>
+                            </tr>
+                        <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                </div>
+
+                <dialog class="add-link-dialog" id="edit-link-dialog" aria-labelledby="edit-link-title" aria-describedby="edit-link-description">
+                    <div class="add-link-dialog-heading">
+                        <div><p class="add-link-eyebrow">KELOLA TAUTAN</p><h2 id="edit-link-title">Edit Tautan</h2><p id="edit-link-description">Perbarui informasi tautan publik.</p></div>
+                        <button class="edit-link-close add-link-close" type="button" aria-label="Tutup dialog">&times;</button>
                     </div>
-                <?php endforeach; ?>
+                    <form method="post" enctype="multipart/form-data" class="add-link-form" id="edit-link-form">
+                        <?php token_input(); ?>
+                        <input type="hidden" name="action" value="save"><input type="hidden" name="id">
+                        <label for="edit-link-name">Nama</label><input id="edit-link-name" name="title" maxlength="80" required>
+                        <label for="edit-link-url">URL</label><input id="edit-link-url" name="url" required>
+                        <label for="edit-link-icon">Logo/Icon (opsional: ganti)</label>
+                        <span class="edit-link-icon"><span id="edit-current-icon"></span><span>Logo saat ini</span></span>
+                        <input id="edit-link-icon" name="icon_file" type="file" accept="image/png,image/jpeg">
+                        <p class="add-link-hint">Kosongkan untuk mempertahankan logo. PNG atau JPG, maksimal 2 MB.</p>
+                        <label for="edit-link-order">Urutan</label><input id="edit-link-order" name="sort_order" type="number">
+                        <div class="edit-link-checks">
+                            <label><input type="checkbox" name="is_active"> Aktif</label>
+                            <label><input type="checkbox" name="featured"> Unggulan</label>
+                        </div>
+                        <div class="add-link-actions"><button class="button edit-link-cancel" type="button">Batal</button><button class="button primary" type="submit">Simpan Perubahan</button></div>
+                    </form>
+                </dialog>
             </section>
 
         <?php else: ?>
@@ -411,6 +447,11 @@ $metricIcons = [
 </div>
 
 <?php if ($tab === 'overview'): ?><script src="assets/js/dashboard-chart.js?v=<?= h($chartScriptVersion) ?>" defer></script><?php endif; ?>
-<?php if ($tab === 'links'): ?><script src="assets/js/dashboard-links.js?v=<?= h($linksScriptVersion) ?>" defer></script><?php endif; ?>
+<?php if ($tab === 'links'): ?>
+<script src="assets/vendor/jquery/jquery.min.js" defer></script>
+<script src="assets/vendor/datatables/dataTables.min.js" defer></script>
+<script src="assets/vendor/sweetalert2/sweetalert2.min.js" defer></script>
+<script src="assets/js/dashboard-links.js?v=<?= h($linksScriptVersion) ?>" defer></script>
+<?php endif; ?>
 <script src="assets/js/dashboard-session.js?v=<?= h($dashboardScriptVersion) ?>" defer></script>
 <?php require __DIR__ . '/../includes/footer.php'; ?>

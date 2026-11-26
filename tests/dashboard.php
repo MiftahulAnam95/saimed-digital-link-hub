@@ -21,6 +21,8 @@ $devices = ['Mobile' => 1];
 $browsers = ['Browser' => 1];
 $daily = ['2026-01-01' => ['views' => 1, 'clicks' => 1]];
 $allLinks = fallback_links();
+foreach ($allLinks as $i => &$fixtureLink) $fixtureLink['id'] = $i + 1;
+unset($fixtureLink);
 $allLinks[0]['title'] = '<script>alert(1)</script>';
 $linkClicks = [];
 $performance = [
@@ -83,6 +85,12 @@ foreach (['overview' => 'Ringkasan', 'links' => 'Kelola Tautan', 'activity' => '
         expect_dashboard(str_contains($html, '<noscript>') && str_contains($html, 'class="add-link-fallback"'), 'Tambah tautan harus tetap tersedia tanpa JavaScript');
         expect_dashboard(str_contains($html, 'type="file" accept="image/png,image/jpeg" required'), 'Logo baru harus diunggah sebagai PNG atau JPG');
         expect_dashboard(str_contains($html, 'Logo/Icon (opsional: ganti)'), 'Logo tautan lama bisa dipertahankan atau diganti');
+        expect_dashboard(str_contains($html, '<table id="links-table"'), 'Daftar tautan harus berupa tabel');
+        expect_dashboard(str_contains($html, 'assets/vendor/datatables/dataTables.min.js') && str_contains($html, 'assets/vendor/sweetalert2/sweetalert2.min.js'), 'DataTables dan SweetAlert2 harus dimuat secara lokal');
+        expect_dashboard(str_contains($html, 'id="edit-link-dialog"') && str_contains($html, 'id="edit-link-form"'), 'Edit harus menggunakan dialog');
+        expect_dashboard(str_contains($html, 'data-title="&lt;script&gt;alert(1)&lt;/script&gt;"'), 'Data dialog harus di-escape');
+        expect_dashboard(str_contains($html, 'name="is_active"') && str_contains($html, 'name="featured"') && str_contains($html, 'name="sort_order"'), 'Dialog edit harus mempertahankan semua pengaturan');
+        expect_dashboard(str_contains($html, 'class="edit-link-fallback"'), 'Edit tanpa JavaScript harus tetap tersedia');
         expect_dashboard(str_contains($html, 'assets/js/dashboard-links.js?v='), 'Script dialog harus dimuat pada tab tautan');
         expect_dashboard(str_contains($html, 'name="action" value="add"'), 'Tambah tautan harus tersedia');
         expect_dashboard(str_contains($html, 'name="action" value="save"'), 'Simpan tautan harus tersedia');
