@@ -15,7 +15,7 @@ const rows = Array.from({ length: 15 }, (_, i) => `
 const html = process.env.DASHBOARD_HTML ? fs.readFileSync(process.env.DASHBOARD_HTML, 'utf8') : `<!doctype html><html><body>
   <p id="dashboard-notice" data-notice-type="error">&lt;gambar&gt; gagal</p>
   <button id="open-add-link" hidden>Tambah</button><dialog id="add-link-dialog"><button class="add-link-close">X</button><input id="new-link-title"><button class="add-link-cancel">Batal</button></dialog>
-  <table id="links-table"><thead><tr><th>Nama</th><th>URL</th><th>Urutan</th><th>Status</th><th>Unggulan</th><th>Aksi</th></tr></thead><tbody>${rows}</tbody></table>
+  <div class="links-table-wrap" tabindex="0"><table id="links-table"><thead><tr><th>Nama</th><th>URL</th><th>Urutan</th><th>Status</th><th>Unggulan</th><th>Aksi</th></tr></thead><tbody>${rows}</tbody></table></div>
   <dialog id="edit-link-dialog"><button class="edit-link-close">X</button><form id="edit-link-form">
   <input name="id"><input name="title" id="edit-link-name"><input name="url"><input name="sort_order"><input type="checkbox" name="is_active"><input type="checkbox" name="featured"><input type="file" name="icon_file"><span id="edit-current-icon"></span><button class="edit-link-cancel" type="button">Batal</button></form></dialog>
   </body></html>`;
@@ -37,6 +37,11 @@ async function main() {
   assert.equal(alerts[0].text, '<gambar> gagal');
   assert.equal(alerts[0].html, undefined); // Pesan tidak disisipkan sebagai HTML.
   assert.equal(document.getElementById('dashboard-notice').hidden, true);
+  const scrollArea = document.querySelector('.links-table-wrap .dt-layout-table');
+  assert.equal(document.querySelector('.links-table-wrap').classList.contains('is-enhanced'), true);
+  assert.equal(scrollArea.getAttribute('role'), 'region');
+  assert.equal(scrollArea.getAttribute('tabindex'), '0');
+  assert.equal(document.querySelector('.dt-search input').placeholder, 'Cari nama atau URL...');
   const dt = $('#links-table').DataTable();
   assert.equal(dt.rows().count(), 15);
   assert.equal(document.querySelectorAll('#links-table tbody tr').length, 10);

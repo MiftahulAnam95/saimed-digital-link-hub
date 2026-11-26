@@ -67,10 +67,11 @@
 
   if (table && window.jQuery && window.jQuery.fn.DataTable) {
     window.jQuery(table).DataTable({
-      order: [], pageLength: 10, lengthMenu: [10, 25, 50, 100],
+      order: [], pageLength: 10, lengthMenu: [10, 25, 50, 100], pagingType: 'simple_numbers',
+      layout: { topStart: 'search', topEnd: 'pageLength', bottomStart: 'info', bottomEnd: 'paging' },
       columnDefs: [{ targets: -1, orderable: false, searchable: false }],
       language: {
-        search: 'Cari:', lengthMenu: 'Tampilkan _MENU_ tautan',
+        search: 'Cari tautan _INPUT_', searchPlaceholder: 'Cari nama atau URL...', lengthMenu: 'Tampilkan _MENU_ tautan',
         info: 'Menampilkan _START_–_END_ dari _TOTAL_ tautan',
         infoEmpty: 'Tidak ada tautan untuk ditampilkan', infoFiltered: '(disaring dari _MAX_ tautan)',
         zeroRecords: 'Tidak ada tautan yang cocok', emptyTable: 'Belum ada tautan publik',
@@ -78,6 +79,17 @@
         aria: { orderable: 'Urutkan kolom ini', orderableReverse: 'Balik urutan kolom ini' },
       },
     });
+    const tableWrap = table.closest('.links-table-wrap');
+    if (tableWrap) {
+      tableWrap.classList.add('is-enhanced');
+      tableWrap.removeAttribute('tabindex');
+      const scrollArea = tableWrap.querySelector('.dt-layout-table');
+      if (scrollArea) {
+        scrollArea.setAttribute('tabindex', '0');
+        scrollArea.setAttribute('role', 'region');
+        scrollArea.setAttribute('aria-label', 'Tabel tautan publik; geser ke samping untuk melihat seluruh kolom');
+      }
+    }
   }
 
   const notice = document.getElementById('dashboard-notice');

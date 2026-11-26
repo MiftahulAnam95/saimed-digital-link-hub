@@ -86,6 +86,9 @@ foreach (['overview' => 'Ringkasan', 'links' => 'Kelola Tautan', 'activity' => '
         expect_dashboard(str_contains($html, 'type="file" accept="image/png,image/jpeg" required'), 'Logo baru harus diunggah sebagai PNG atau JPG');
         expect_dashboard(str_contains($html, 'Logo/Icon (opsional: ganti)'), 'Logo tautan lama bisa dipertahankan atau diganti');
         expect_dashboard(str_contains($html, '<table id="links-table"'), 'Daftar tautan harus berupa tabel');
+        expect_dashboard(str_contains($html, 'class="links-scroll-hint"') && str_contains($html, 'aria-label="Tabel tautan publik; geser ke samping untuk melihat seluruh kolom"'), 'Tabel harus punya petunjuk scroll yang dapat diakses');
+        expect_dashboard(str_contains($html, 'aria-label="Edit &lt;script&gt;alert(1)&lt;/script&gt;"'), 'Label aksi harus menjelaskan tautan dan tetap aman');
+
         expect_dashboard(str_contains($html, 'assets/vendor/datatables/dataTables.min.js') && str_contains($html, 'assets/vendor/sweetalert2/sweetalert2.min.js'), 'DataTables dan SweetAlert2 harus dimuat secara lokal');
         expect_dashboard(str_contains($html, 'id="edit-link-dialog"') && str_contains($html, 'id="edit-link-form"'), 'Edit harus menggunakan dialog');
         expect_dashboard(str_contains($html, 'data-title="&lt;script&gt;alert(1)&lt;/script&gt;"'), 'Data dialog harus di-escape');
