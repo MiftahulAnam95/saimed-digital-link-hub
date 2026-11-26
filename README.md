@@ -53,7 +53,7 @@ Jika kembali ke halaman admin dengan pesan sesi tidak valid, cari baris terbaru 
 
 ## Pengujian
 
-Jalankan `php tests/smoke.php`, `php tests/db-config.php`, `php tests/dashboard.php`, `php tests/dashboard-chart.php`, `php tests/dashboard-data.php`, `php tests/dashboard-stats.php`, `php tests/dashboard-export.php`, `php tests/admin-no-demo.php`, `php tests/admin-actions-mysqli.php`, `php tests/analytics-track.php <skenario>` untuk `valid`, `null`, `invalid`, dan `method`, `php tests/sso.php`, `php tests/sso-access.php`, `php tests/sso-logout.php`, `php tests/sso-profile.php`, `php tests/sso-diagnostics.php`, `php tests/sso-url.php`, `php tests/sso-return.php`, serta `php tests/sso-controller.php <skenario>` untuk setiap skenario `start`, `retry`, `returned`, dan `config`; periksa juga sintaks PHP. Tes SSO memerlukan dependensi Composer; tes URL memerlukan ekstensi OpenSSL.
+Jalankan `php tests/smoke.php`, `php tests/db-config.php`, `php tests/dashboard.php`, `php tests/dashboard-chart.php`, `php tests/dashboard-data.php`, `php tests/dashboard-stats.php`, `php tests/dashboard-export.php`, `php tests/admin-no-demo.php`, `php tests/admin-actions-mysqli.php`, `php tests/uploaded-icons.php`, `node tests/dashboard-links.js` (jika Node.js tersedia), `php tests/analytics-track.php <skenario>` untuk `valid`, `null`, `invalid`, dan `method`, `php tests/sso.php`, `php tests/sso-access.php`, `php tests/sso-logout.php`, `php tests/sso-profile.php`, `php tests/sso-diagnostics.php`, `php tests/sso-url.php`, `php tests/sso-return.php`, serta `php tests/sso-controller.php <skenario>` untuk setiap skenario `start`, `retry`, `returned`, dan `config`; periksa juga sintaks PHP. Tes SSO memerlukan dependensi Composer; tes URL memerlukan ekstensi OpenSSL.
 
 ## Laporan analytics
 
@@ -62,3 +62,9 @@ Dashboard menggunakan data dari MySQL, bukan data localStorage atau data contoh 
 Tombol **Perbarui** memuat ulang data dari server. **Ekspor CSV** hanya tersedia bagi Super Admin yang terautentikasi dan mengikuti periode terpilih. File menggunakan zona waktu WIB dan memuat waktu, jenis aktivitas, label, dan perangkat; nilai dibatasi agar tidak dieksekusi sebagai formula spreadsheet. Ekspor tidak menyertakan ID pengunjung atau user agent.
 
 Grafik Aktivitas Harian menampilkan nilai kunjungan dan klik saat diarahkan kursor atau disentuh. Pengguna keyboard dapat memfokuskan grafik lalu memakai tombol panah, Home, dan End; tabel rincian harian tetap tersedia. Garis melengkung melewati titik data yang tercatat dan tidak menambahkan nilai harian baru.
+
+## Logo tautan
+
+Saat menambah tautan, Super Admin mengunggah logo PNG atau JPG (maksimal 2 MB, 4096 piksel per sisi dan 16 megapiksel). File diverifikasi di server, disimpan dengan nama acak pada `config/uploads/`, dan ditampilkan di dalam kotak berukuran sama dengan `object-fit: contain` agar tidak terdistorsi; ukuran file asli tidak diubah. Logo lama dapat dipertahankan atau diganti saat menyunting. Ikon bawaan untuk tautan yang sudah ada tetap berfungsi. Tidak perlu mengubah struktur database.
+
+Folder `config/uploads/` berisi data pengguna dan tidak masuk Git. Proses PHP harus dapat membuat dan menulis folder ini. Backup folder tersebut bersama database sebelum deployment atau migrasi, dan gunakan penyimpanan persisten bersama jika menjalankan lebih dari satu instance. Folder `config/` harus diblokir dari akses HTTP langsung (aturan Apache `.htaccess` tersedia; konfigurasi setara wajib untuk server lain). Logo ditayangkan melalui endpoint aplikasi `?api=icon&file=...`. Pastikan batas PHP `upload_max_filesize` minimal 2M dan `post_max_size` lebih besar dari 2M. File lama yang diganti atau dihapus dibersihkan setelah perubahan database berhasil.

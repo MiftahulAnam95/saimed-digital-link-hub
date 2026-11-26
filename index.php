@@ -17,6 +17,11 @@ if ($api === 'health' || in_array($requestPath, ['/api/health', '/api/health.php
     exit;
 }
 
+if ($api === 'icon' || in_array($requestPath, ['/api/icon', '/api/icon.php'], true)) {
+    require __DIR__ . '/api/icon.php';
+    exit;
+}
+
 if (isset($_GET['api'])) {
     json_response(['error' => 'Tidak ditemukan'], 404);
 }

@@ -60,6 +60,7 @@ foreach (['overview' => 'Ringkasan', 'links' => 'Kelola Tautan', 'activity' => '
     expect_dashboard(str_contains($html, 'https://example.test/avatar.png?a=1&amp;b=2'), 'URL foto profil harus di-escape');
     expect_dashboard(str_contains($html, 'assets/js/dashboard-session.js'), 'Timer harus dimuat');
     expect_dashboard(!str_contains($html, '<script>alert(1)</script>'), 'Data tautan tidak boleh menjadi HTML');
+    if ($tab !== 'links') expect_dashboard(!str_contains($html, 'assets/js/dashboard-links.js'), 'Script dialog hanya dimuat pada tab tautan');
     if ($tab === 'overview') {
         expect_dashboard(str_contains($html, 'Aktivitas Harian'), 'Grafik aktivitas harus tersedia');
         expect_dashboard(str_contains($html, 'Lihat rincian harian'), 'Tabel data grafik harus tersedia');
@@ -75,6 +76,14 @@ foreach (['overview' => 'Ringkasan', 'links' => 'Kelola Tautan', 'activity' => '
         expect_dashboard(str_contains($html, '90 hari terakhir') && str_contains($html, 'Semua waktu'), 'Periode tambahan harus tersedia');
     }
     if ($tab === 'links') {
+        expect_dashboard(str_contains($html, '<dialog class="add-link-dialog" id="add-link-dialog" aria-labelledby="add-link-title" aria-describedby="add-link-description">'), 'Tambah tautan harus berupa dialog berlabel');
+        expect_dashboard(str_contains($html, 'id="open-add-link" aria-haspopup="dialog" aria-controls="add-link-dialog"'), 'Tombol harus terhubung dengan dialog');
+        expect_dashboard(str_contains($html, '<label for="new-link-title">Nama</label>') && str_contains($html, '<label for="new-link-url">URL</label>') && str_contains($html, '<label for="new-link-icon">Logo/Icon</label>'), 'Form dialog harus memiliki tiga label');
+        expect_dashboard((bool) preg_match('~<dialog.*?<form method="post" enctype="multipart/form-data" class="add-link-form">.*?name="csrf" value="test-csrf".*?name="action" value="add".*?name="title".*?name="url".*?name="icon_file".*?</form>.*?</dialog>~s', $html), 'Form dialog harus mengirim CSRF dan data tambah');
+        expect_dashboard(str_contains($html, '<noscript>') && str_contains($html, 'class="add-link-fallback"'), 'Tambah tautan harus tetap tersedia tanpa JavaScript');
+        expect_dashboard(str_contains($html, 'type="file" accept="image/png,image/jpeg" required'), 'Logo baru harus diunggah sebagai PNG atau JPG');
+        expect_dashboard(str_contains($html, 'Logo/Icon (opsional: ganti)'), 'Logo tautan lama bisa dipertahankan atau diganti');
+        expect_dashboard(str_contains($html, 'assets/js/dashboard-links.js?v='), 'Script dialog harus dimuat pada tab tautan');
         expect_dashboard(str_contains($html, 'name="action" value="add"'), 'Tambah tautan harus tersedia');
         expect_dashboard(str_contains($html, 'name="action" value="save"'), 'Simpan tautan harus tersedia');
         expect_dashboard(str_contains($html, 'name="action" value="delete"'), 'Hapus tautan harus tersedia');
