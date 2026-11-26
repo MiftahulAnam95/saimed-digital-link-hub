@@ -2,7 +2,8 @@
   "name": "saimed-link-hub-tests",
   "private": true,
   "scripts": {
-    "test:dashboard-links": "node tests/dashboard-links.js && node tests/dashboard-links-dom.js"
+    "test:dashboard-links": "node tests/dashboard-links.js && node tests/dashboard-links-dom.js",
+    "test:dashboard-activity": "node tests/dashboard-activity-dom.js"
   },
   "devDependencies": {
     "jsdom": "26.1.0"
