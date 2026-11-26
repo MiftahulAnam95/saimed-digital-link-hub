@@ -36,7 +36,12 @@
       fields.namedItem('id').value = button.dataset.id;
       fields.namedItem('title').value = button.dataset.title;
       fields.namedItem('url').value = button.dataset.url;
-      fields.namedItem('sort_order').value = button.dataset.order;
+      const position = fields.namedItem('sort_order');
+      position.value = button.dataset.order;
+      for (const option of position.options) {
+        const label = option.dataset.linkId === button.dataset.id ? 'posisi saat ini' : 'saat ini: ' + option.dataset.title;
+        option.textContent = 'Posisi ' + option.value + ' · ' + label + (option.dataset.active === '0' ? ' (nonaktif)' : '');
+      }
       fields.namedItem('is_active').checked = button.dataset.active === '1';
       fields.namedItem('featured').checked = button.dataset.featured === '1';
       const icon = button.closest('tr').querySelector('.links-name .platform-icon');
