@@ -97,16 +97,18 @@ async function main() {
   assert.equal(successAlert.text, 'Tersimpan');
   assert.equal(successNotice.hidden, true);
   success.window.close();
-  // Judul Aksi rata kiri seperti kolom lain, tetapi tombol tetap di sisi kanan.
-  const alignment = new JSDOM('<style></style><div class="dashboard"><table class="dataTable links-table"><thead><tr><th><div class="dt-column-header">Nama</div></th><th><div class="dt-column-header">Aksi</div></th></tr></thead><tbody><tr><td>1</td><td><div class="link-row-actions">Tombol</div></td></tr></tbody></table></div>');
+  // Isi Urutan di tengah; judul dan tombol Aksi tetap rata kiri.
+  const alignment = new JSDOM('<style></style><div class="dashboard"><table class="dataTable links-table"><thead><tr><th><div class="dt-column-header">Nama</div></th><th>URL</th><th>Urutan</th><th>Status</th><th>Unggulan</th><th><div class="dt-column-header">Aksi</div></th></tr></thead><tbody><tr><td>Nama</td><td>URL</td><td class="dt-type-numeric">1</td><td>Aktif</td><td>Tidak</td><td><div class="link-row-actions">Tombol</div></td></tr></tbody></table></div>');
   alignment.window.document.querySelector('style').textContent = ['assets/css/style.css', 'assets/vendor/datatables/dataTables.dataTables.min.css', 'assets/css/admin.css'].map(read).join('\n');
   const headers = alignment.window.document.querySelectorAll('th');
   const computed = element => alignment.window.getComputedStyle(element);
-  assert.equal(computed(headers[1]).textAlign, 'left');
-  assert.equal(computed(headers[1].firstElementChild).justifyContent, computed(headers[0].firstElementChild).justifyContent);
-  assert.equal(computed(headers[1]).paddingRight, computed(headers[0]).paddingRight);
-  assert.equal(computed(alignment.window.document.querySelector('td:last-child')).textAlign, 'right');
-  assert.equal(computed(alignment.window.document.querySelector('.link-row-actions')).justifyContent, 'flex-end');
+  assert.equal(computed(headers[5]).textAlign, 'left');
+  assert.equal(computed(headers[5].firstElementChild).justifyContent, computed(headers[0].firstElementChild).justifyContent);
+  assert.equal(computed(headers[5]).paddingRight, computed(headers[0]).paddingRight);
+  assert.equal(computed(alignment.window.document.querySelector('td:nth-child(3)')).textAlign, 'center');
+  assert.equal(computed(alignment.window.document.querySelector('td:nth-child(2)')).textAlign, 'left');
+  assert.equal(computed(alignment.window.document.querySelector('td:last-child')).textAlign, 'left');
+  assert.equal(computed(alignment.window.document.querySelector('.link-row-actions')).justifyContent, 'flex-start');
   alignment.window.close();
   console.log('Tes DataTables, dialog edit, dan SweetAlert2 berhasil.');
 }
