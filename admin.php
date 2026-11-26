@@ -13,7 +13,8 @@ require_once __DIR__ . '/akses.php';
 require __DIR__ . '/includes/admin-actions.php';
 
 $notice = $_SESSION['notice'] ?? '';
-unset($_SESSION['notice']);
+$noticeType = $_SESSION['notice_type'] ?? '';
+unset($_SESSION['notice'], $_SESSION['notice_type']);
 
 if (!$loggedIn) {
     $ssoLoginUrl = sso_prepare_login($loggedIn, $ssoError);

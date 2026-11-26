@@ -14,6 +14,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($action === 'logout') sso_handle_logout_action();
     if (!in_array($action, ['save', 'add', 'delete'], true)) {
         $_SESSION['notice'] = 'Tindakan tidak dikenal.';
+        $_SESSION['notice_type'] = 'error';
         redirect_admin($tab);
     }
     $newIcon = null;
@@ -48,20 +49,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 }
             }
             $_SESSION['notice'] = 'Tautan berhasil disimpan.';
+            $_SESSION['notice_type'] = 'success';
         } elseif ($action === 'delete') {
             $id = filter_var($_POST['id'] ?? null, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
             if (!$id) throw new InvalidArgumentException('ID tidak valid.');
             $check = $db->prepare('SELECT icon FROM links WHERE id = ?');
             $check->execute([$id]);
             $existing = $check->get_result()->fetch_assoc();
+            if (!$existing) throw new InvalidArgumentException('Tautan tidak ditemukan.');
             $stmt = $db->prepare('DELETE FROM links WHERE id = ?');
             $stmt->execute([$id]);
             if ($existing) delete_uploaded_icon((string) $existing['icon']);
             $_SESSION['notice'] = 'Tautan berhasil dihapus.';
+            $_SESSION['notice_type'] = 'success';
         }
     } catch (Throwable $e) {
         if ($newIcon !== null) delete_uploaded_icon($newIcon);
         error_log('SAIMED admin: ' . $e->getMessage());
+        $_SESSION['notice_type'] = 'error';
         $_SESSION['notice'] = $e instanceof InvalidArgumentException ? $e->getMessage() : 'Gagal menyimpan data. Periksa koneksi dan skema database.';
     }
     redirect_admin(in_array($action, ['save', 'add', 'delete'], true) ? 'links' : $tab);

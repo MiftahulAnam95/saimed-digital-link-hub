@@ -22,7 +22,7 @@ function fixture(native) {
     dialog.close = () => { events.open = false; };
   }
   const document = { getElementById: id => ({ 'add-link-dialog': dialog, 'open-add-link': trigger, 'new-link-title': title })[id] };
-  vm.runInNewContext(script, { document });
+  vm.runInNewContext(script, { document, window: {} });
   assert.equal(trigger.hidden, false);
   events.trigger();
   assert.equal(events.open, true);
