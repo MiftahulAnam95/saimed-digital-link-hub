@@ -43,6 +43,7 @@ async function main() {
   assert.equal(scrollArea.getAttribute('tabindex'), '0');
   assert.equal(document.querySelector('.dt-search input').placeholder, 'Cari nama atau URL...');
   const dt = $('#links-table').DataTable();
+  assert.equal(dt.settings()[0].oFeatures.bAutoWidth, false, 'Lebar kolom mengikuti tata letak CSS');
   assert.equal(dt.rows().count(), 15);
   assert.equal(document.querySelectorAll('#links-table tbody tr').length, 10);
   dt.search('Tautan 15').draw();

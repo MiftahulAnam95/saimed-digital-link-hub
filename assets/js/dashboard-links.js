@@ -67,7 +67,7 @@
 
   if (table && window.jQuery && window.jQuery.fn.DataTable) {
     window.jQuery(table).DataTable({
-      order: [], pageLength: 10, lengthMenu: [10, 25, 50, 100], pagingType: 'simple_numbers',
+      order: [], autoWidth: false, pageLength: 10, lengthMenu: [10, 25, 50, 100], pagingType: 'simple_numbers',
       layout: { topStart: 'search', topEnd: 'pageLength', bottomStart: 'info', bottomEnd: 'paging' },
       columnDefs: [{ targets: -1, orderable: false, searchable: false }],
       language: {
