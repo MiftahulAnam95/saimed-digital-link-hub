@@ -635,3 +635,21 @@
   .dashboard .dt-container .dt-search input { width: min(230px, 100%); }
 }
 .dashboard .dt-container .dt-length select.dt-input { border: 1px solid #dfe9ee; border-radius: 9px; color: #5e7886; }
+
+/* Lebar kolom seimbang; aksi diratakan ke sisi kanan tabel. */
+.dashboard table.links-table { min-width: 980px; table-layout: fixed; }
+.dashboard table.dataTable.links-table { min-width: 980px; table-layout: fixed; }
+.dashboard table.links-table colgroup col:nth-child(1), .dashboard table.links-table > thead > tr > th:nth-child(1) { width: 24%; }
+.dashboard table.links-table colgroup col:nth-child(2), .dashboard table.links-table > thead > tr > th:nth-child(2) { width: 26%; }
+.dashboard table.links-table colgroup col:nth-child(3), .dashboard table.links-table > thead > tr > th:nth-child(3) { width: 10%; }
+.dashboard table.links-table colgroup col:nth-child(4), .dashboard table.links-table > thead > tr > th:nth-child(4) { width: 11%; }
+.dashboard table.links-table colgroup col:nth-child(5), .dashboard table.links-table > thead > tr > th:nth-child(5) { width: 11%; }
+.dashboard table.links-table colgroup col:nth-child(6), .dashboard table.links-table > thead > tr > th:nth-child(6) { width: 18%; }
+.dashboard .links-name { min-width: 0; }
+.dashboard .links-name strong { min-width: 0; }
+.dashboard .links-url { max-width: 100%; }
+.dashboard table.links-table > thead > tr > th:last-child,
+.dashboard table.links-table > tbody > tr > td:last-child { text-align: right; }
+.dashboard table.links-table > thead > tr > th:last-child .dt-column-header { justify-content: flex-end; }
+.dashboard .link-row-actions { justify-content: flex-end; }
+.dashboard table.dataTable.links-table > thead > tr > th:last-child { padding-right: 16px; }
