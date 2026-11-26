@@ -26,40 +26,56 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if (!$title || !$url) {
                 throw new InvalidArgumentException('Nama dan URL http/https atau tautan internal yang valid wajib diisi.');
             }
-            if ($action === 'add') {
-                $newIcon = upload_link_icon($_FILES['icon_file'] ?? null, true);
-                $key = trim(preg_replace('/[^a-z0-9]+/', '-', strtolower($title)), '-') ?: 'tautan';
-                $sortOrder = (int) $db->query('SELECT COALESCE(MAX(sort_order), 0) + 1 AS next_order FROM links')->fetch_assoc()['next_order'];
-                $stmt = $db->prepare('INSERT INTO links (`key`, title, url, icon, sort_order) VALUES (?, ?, ?, ?, ?)');
-                $stmt->execute([substr($key, 0, 38) . '-' . bin2hex(random_bytes(3)), $title, $url, $newIcon, $sortOrder]);
-                $newIcon = null; // Sudah tercatat; jangan hapus pada penanganan kesalahan.
-            } else {
+            $id = null;
+            $position = null;
+            if ($action === 'save') {
                 $id = filter_var($_POST['id'] ?? null, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
                 if (!$id) throw new InvalidArgumentException('ID tidak valid.');
-                $check = $db->prepare('SELECT icon FROM links WHERE id = ?');
-                $check->execute([$id]);
-                $existing = $check->get_result()->fetch_assoc();
-                if (!$existing) throw new InvalidArgumentException('Tautan tidak ditemukan.');
-                $newIcon = upload_link_icon($_FILES['icon_file'] ?? null, false);
-                $stmt = $db->prepare('UPDATE links SET title = ?, url = ?, icon = ?, sort_order = ?, is_active = ?, featured = ?, updated_at = NOW() WHERE id = ?');
-                $stmt->execute([$title, $url, $newIcon ?? $existing['icon'], (int) ($_POST['sort_order'] ?? 0), isset($_POST['is_active']) ? 1 : 0, isset($_POST['featured']) ? 1 : 0, $id]);
-                if ($newIcon !== null) {
-                    delete_uploaded_icon((string) $existing['icon']);
-                    $newIcon = null;
+                $position = filter_var($_POST['sort_order'] ?? null, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
+                if (!$position) throw new InvalidArgumentException('Pilih posisi urutan yang valid.');
+            }
+            $newIcon = upload_link_icon($_FILES['icon_file'] ?? null, $action === 'add');
+            $oldIcon = link_order_transaction($db, function () use ($db, $action, $title, $url, $newIcon, $id, $position) {
+                $rows = link_order_rows($db);
+                if ($action === 'add') {
+                    link_order_write($db, $rows);
+                    $key = trim(preg_replace('/[^a-z0-9]+/', '-', strtolower($title)), '-') ?: 'tautan';
+                    $stmt = $db->prepare('INSERT INTO links (`key`, title, url, icon, sort_order) VALUES (?, ?, ?, ?, ?)');
+                    $stmt->execute([substr($key, 0, 38) . '-' . bin2hex(random_bytes(3)), $title, $url, $newIcon, count($rows) + 1]);
+                    return null;
                 }
+                $index = link_order_find($rows, $id);
+                $version = $_POST['order_version'] ?? null;
+                if (!is_string($version) || !hash_equals(link_order_version($rows), $version)) {
+                    throw new InvalidArgumentException('Urutan tautan telah berubah. Perbarui halaman dan pilih kembali.');
+                }
+                $existingIcon = (string) $rows[$index]['icon'];
+                $reordered = link_order_move($rows, $id, $position);
+                $stmt = $db->prepare('UPDATE links SET title = ?, url = ?, icon = ?, is_active = ?, featured = ?, updated_at = NOW() WHERE id = ?');
+                $stmt->execute([$title, $url, $newIcon ?? $existingIcon, isset($_POST['is_active']) ? 1 : 0, isset($_POST['featured']) ? 1 : 0, $id]);
+                link_order_write($db, $reordered);
+                return $existingIcon;
+            });
+            if ($newIcon !== null) {
+                $newIcon = null; // File baru kini tercatat dalam database.
+                if ($oldIcon !== null) delete_uploaded_icon($oldIcon);
             }
             $_SESSION['notice'] = 'Tautan berhasil disimpan.';
             $_SESSION['notice_type'] = 'success';
         } elseif ($action === 'delete') {
             $id = filter_var($_POST['id'] ?? null, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
             if (!$id) throw new InvalidArgumentException('ID tidak valid.');
-            $check = $db->prepare('SELECT icon FROM links WHERE id = ?');
-            $check->execute([$id]);
-            $existing = $check->get_result()->fetch_assoc();
-            if (!$existing) throw new InvalidArgumentException('Tautan tidak ditemukan.');
-            $stmt = $db->prepare('DELETE FROM links WHERE id = ?');
-            $stmt->execute([$id]);
-            if ($existing) delete_uploaded_icon((string) $existing['icon']);
+            $oldIcon = link_order_transaction($db, function () use ($db, $id) {
+                $rows = link_order_rows($db);
+                $index = link_order_find($rows, $id);
+                $oldIcon = (string) $rows[$index]['icon'];
+                array_splice($rows, $index, 1);
+                $stmt = $db->prepare('DELETE FROM links WHERE id = ?');
+                $stmt->execute([$id]);
+                link_order_write($db, $rows);
+                return $oldIcon;
+            });
+            delete_uploaded_icon($oldIcon);
             $_SESSION['notice'] = 'Tautan berhasil dihapus.';
             $_SESSION['notice_type'] = 'success';
         }

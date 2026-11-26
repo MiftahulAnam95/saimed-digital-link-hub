@@ -17,7 +17,7 @@ const html = process.env.DASHBOARD_HTML ? fs.readFileSync(process.env.DASHBOARD_
   <button id="open-add-link" hidden>Tambah</button><dialog id="add-link-dialog"><button class="add-link-close">X</button><input id="new-link-title"><button class="add-link-cancel">Batal</button></dialog>
   <div class="links-table-wrap" tabindex="0"><table id="links-table"><thead><tr><th>Nama</th><th>URL</th><th class="dt-type-numeric"><div class="dt-column-header">Urutan</div></th><th>Status</th><th>Unggulan</th><th>Aksi</th></tr></thead><tbody>${rows}</tbody></table></div>
   <dialog id="edit-link-dialog"><button class="edit-link-close">X</button><form id="edit-link-form">
-  <input name="id"><input name="title" id="edit-link-name"><input name="url"><input name="sort_order"><input type="checkbox" name="is_active"><input type="checkbox" name="featured"><input type="file" name="icon_file"><span id="edit-current-icon"></span><button class="edit-link-cancel" type="button">Batal</button></form></dialog>
+  <input name="id"><input name="title" id="edit-link-name"><input name="url"><select name="sort_order">${Array.from({ length: 15 }, (_, i) => `<option value="${i + 1}" data-link-id="${i + 1}" data-title="Tautan ${i + 1}" data-active="${i === 3 ? 0 : 1}">Posisi ${i + 1}</option>`).join('')}</select><input type="checkbox" name="is_active"><input type="checkbox" name="featured"><input type="file" name="icon_file"><span id="edit-current-icon"></span><button class="edit-link-cancel" type="button">Batal</button></form></dialog>
   </body></html>`;
 
 async function main() {
@@ -55,6 +55,11 @@ async function main() {
   assert.equal(form.elements.namedItem('id').value, '15');
   assert.equal(form.elements.namedItem('title').value, 'Tautan 15');
   assert.equal(form.elements.namedItem('url').value, 'https://example.test/15');
+  const positions = form.elements.namedItem('sort_order');
+  assert.equal(positions.value, '15');
+  assert.equal(positions.options.length, 15, 'Pilihan posisi tetap lengkap saat tabel difilter');
+  assert.match(positions.options[14].textContent, /posisi saat ini/);
+  assert.match(positions.options[3].textContent, /Tautan 4 \(nonaktif\)/);
   assert.equal(form.elements.namedItem('is_active').checked, true);
   assert.equal(form.elements.namedItem('featured').checked, false);
   assert.ok(document.querySelector('#edit-current-icon .platform-icon img'));
@@ -75,6 +80,8 @@ async function main() {
   assert.equal(document.querySelector('.edit-link-trigger').hidden, false);
   document.querySelector('.edit-link-trigger').click();
   assert.equal(form.elements.namedItem('id').value, '11');
+  assert.equal(positions.value, '11');
+  assert.match(positions.options[14].textContent, /saat ini: Tautan 15/);
   dom.window.close();
   // Tanpa pustaka pihak ketiga, tabel dasar dan pesan tetap tersedia.
   const fallback = new JSDOM(html, { runScripts: 'outside-only', url: 'http://localhost/' });

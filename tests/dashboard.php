@@ -24,6 +24,10 @@ $allLinks = fallback_links();
 foreach ($allLinks as $i => &$fixtureLink) $fixtureLink['id'] = $i + 1;
 unset($fixtureLink);
 $allLinks[0]['title'] = '<script>alert(1)</script>';
+$allLinks[0]['sort_order'] = 2;
+$allLinks[1]['sort_order'] = 2; // Data lama duplikat harus tampil sebagai posisi unik.
+$allLinks[2]['sort_order'] = 9;
+$allLinks[1]['is_active'] = false;
 $linkClicks = [];
 $performance = [
     ['title' => '<tautan>', 'icon' => 'link', 'count' => 3],
@@ -94,6 +98,11 @@ foreach (['overview' => 'Ringkasan', 'links' => 'Kelola Tautan', 'activity' => '
         expect_dashboard(str_contains($html, 'data-title="&lt;script&gt;alert(1)&lt;/script&gt;"'), 'Data dialog harus di-escape');
         expect_dashboard(str_contains($html, 'name="is_active"') && str_contains($html, 'name="featured"') && str_contains($html, 'name="sort_order"'), 'Dialog edit harus mempertahankan semua pengaturan');
         expect_dashboard(str_contains($html, 'class="edit-link-fallback"'), 'Edit tanpa JavaScript harus tetap tersedia');
+        expect_dashboard(str_contains($html, 'data-order="1"') && str_contains($html, 'data-order="2"') && str_contains($html, 'data-order="3"'), 'Urutan lama duplikat harus tampil sebagai posisi unik');
+        expect_dashboard(str_contains($html, 'id="edit-link-order" name="sort_order"') && !str_contains($html, 'name="sort_order" type="number"'), 'Posisi harus berupa pilihan terbatas');
+        expect_dashboard(str_contains($html, 'Posisi 2 · saat ini: Tokopedia (nonaktif)'), 'Posisi nonaktif harus ikut ditampilkan');
+        expect_dashboard(str_contains($html, 'name="order_version" value="' . link_order_version($allLinks) . '"'), 'Form harus mengirim snapshot urutan');
+        expect_dashboard((bool) preg_match('~<noscript>\s*<details class="edit-link-fallback">.*?<select name="sort_order" required>.*?Posisi 1 · posisi saat ini.*?</select>~s', $html), 'Form tanpa JavaScript harus memiliki pilihan urutan dan posisi awal');
         expect_dashboard(str_contains($html, 'assets/js/dashboard-links.js?v='), 'Script dialog harus dimuat pada tab tautan');
         expect_dashboard(str_contains($html, 'name="action" value="add"'), 'Tambah tautan harus tersedia');
         expect_dashboard(str_contains($html, 'name="action" value="save"'), 'Simpan tautan harus tersedia');

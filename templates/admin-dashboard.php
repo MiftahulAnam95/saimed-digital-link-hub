@@ -345,16 +345,19 @@ $metricIcons = [
                         </form>
                     </details>
                 </noscript>
+                <?php $orderVersion = link_order_version($allLinks); ?>
+                <p class="add-link-hint">Urutan menghitung semua tautan, termasuk yang nonaktif. Di halaman publik, hanya tautan aktif yang ditampilkan sesuai urutan ini.</p>
                 <p class="links-scroll-hint">Geser tabel ke samping untuk melihat semua kolom.</p>
                 <div class="links-table-wrap" tabindex="0" role="region" aria-label="Tabel tautan publik; geser ke samping untuk melihat seluruh kolom">
                     <table id="links-table" class="display links-table">
                         <thead><tr><th>Nama Tautan</th><th>URL Tujuan</th><th>Urutan</th><th>Status</th><th>Unggulan</th><th>Aksi</th></tr></thead>
                         <tbody>
-                        <?php foreach ($allLinks as $link): ?>
+                        <?php foreach ($allLinks as $linkIndex => $link): ?>
+                            <?php $displayPosition = $linkIndex + 1; ?>
                             <tr>
                                 <td><span class="links-name"><?= icon($link['icon']) ?><strong><?= h($link['title']) ?></strong></span></td>
                                 <td><span class="links-url" title="<?= h($link['url']) ?>"><?= h($link['url']) ?></span></td>
-                                <td><?= h($link['sort_order']) ?></td>
+                                <td><?= h($displayPosition) ?></td>
                                 <td><span class="link-status <?= boolval_db($link['is_active']) ? 'is-active' : 'is-inactive' ?>"><?= boolval_db($link['is_active']) ? 'Aktif' : 'Nonaktif' ?></span></td>
                                 <td><span class="link-featured <?= boolval_db($link['featured']) ? 'is-featured' : '' ?>"><?= boolval_db($link['featured']) ? 'Ya' : 'Tidak' ?></span></td>
                                 <td>
@@ -362,7 +365,7 @@ $metricIcons = [
                                     <div class="link-row-actions">
                                         <button type="button" class="button edit-link-trigger" aria-haspopup="dialog" aria-controls="edit-link-dialog" hidden
                                             data-id="<?= h($link['id']) ?>" data-title="<?= h($link['title']) ?>" data-url="<?= h($link['url']) ?>"
-                                            data-order="<?= h($link['sort_order']) ?>" data-active="<?= boolval_db($link['is_active']) ? '1' : '0' ?>" data-featured="<?= boolval_db($link['featured']) ? '1' : '0' ?>" aria-label="Edit <?= h($link['title']) ?>"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4Z"/></svg> Edit</button>
+                                            data-order="<?= h($displayPosition) ?>" data-active="<?= boolval_db($link['is_active']) ? '1' : '0' ?>" data-featured="<?= boolval_db($link['featured']) ? '1' : '0' ?>" aria-label="Edit <?= h($link['title']) ?>"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4Z"/></svg> Edit</button>
                                         <form method="post" class="delete-link-form" onsubmit="return confirm('Hapus tautan ini?')">
                                             <?php token_input(); ?>
                                             <input type="hidden" name="action" value="delete">
@@ -374,11 +377,18 @@ $metricIcons = [
                                         <details class="edit-link-fallback"><summary>Edit</summary>
                                             <form method="post" enctype="multipart/form-data" class="add-link-form">
                                                 <?php token_input(); ?>
-                                                <input type="hidden" name="action" value="save"><input type="hidden" name="id" value="<?= h($link['id']) ?>">
+                                                <input type="hidden" name="action" value="save"><input type="hidden" name="id" value="<?= h($link['id']) ?>"><input type="hidden" name="order_version" value="<?= h($orderVersion) ?>">
                                                 <label>Nama<input name="title" value="<?= h($link['title']) ?>" maxlength="80" required></label>
                                                 <label>URL<input name="url" value="<?= h($link['url']) ?>" required></label>
                                                 <label>Logo/Icon (opsional: ganti)<input name="icon_file" type="file" accept="image/png,image/jpeg"></label>
-                                                <label>Urutan<input name="sort_order" type="number" value="<?= h($link['sort_order']) ?>"></label>
+                                                <label>Urutan
+                                                    <select name="sort_order" required>
+                                                        <?php foreach ($allLinks as $optionIndex => $optionLink): ?>
+                                                            <option value="<?= $optionIndex + 1 ?>" <?= $optionIndex === $linkIndex ? 'selected' : '' ?>>Posisi <?= $optionIndex + 1 ?> · <?= $optionIndex === $linkIndex ? 'posisi saat ini' : 'saat ini: ' . h($optionLink['title']) ?><?= !boolval_db($optionLink['is_active']) ? ' (nonaktif)' : '' ?></option>
+                                                        <?php endforeach; ?>
+                                                    </select>
+                                                </label>
+                                                <p class="add-link-hint">Posisi 1 paling atas. Tautan lain bergeser; tautan nonaktif ikut dihitung.</p>
                                                 <label class="check"><input type="checkbox" name="is_active" <?= boolval_db($link['is_active']) ? 'checked' : '' ?>> Aktif</label>
                                                 <label class="check"><input type="checkbox" name="featured" <?= boolval_db($link['featured']) ? 'checked' : '' ?>> Unggulan</label>
                                                 <button class="button primary" type="submit">Simpan</button>
@@ -402,14 +412,20 @@ $metricIcons = [
                     </div>
                     <form method="post" enctype="multipart/form-data" class="add-link-form" id="edit-link-form">
                         <?php token_input(); ?>
-                        <input type="hidden" name="action" value="save"><input type="hidden" name="id">
+                        <input type="hidden" name="action" value="save"><input type="hidden" name="id"><input type="hidden" name="order_version" value="<?= h($orderVersion) ?>">
                         <label for="edit-link-name">Nama</label><input id="edit-link-name" name="title" maxlength="80" required>
                         <label for="edit-link-url">URL</label><input id="edit-link-url" name="url" required>
                         <label for="edit-link-icon">Logo/Icon (opsional: ganti)</label>
                         <span class="edit-link-icon"><span id="edit-current-icon"></span><span>Logo saat ini</span></span>
                         <input id="edit-link-icon" name="icon_file" type="file" accept="image/png,image/jpeg">
                         <p class="add-link-hint">Kosongkan untuk mempertahankan logo. PNG atau JPG, maksimal 2 MB.</p>
-                        <label for="edit-link-order">Urutan</label><input id="edit-link-order" name="sort_order" type="number">
+                        <label for="edit-link-order">Urutan tampilan</label>
+                        <select id="edit-link-order" name="sort_order" aria-describedby="edit-order-hint" required>
+                            <?php foreach ($allLinks as $optionIndex => $optionLink): ?>
+                                <option value="<?= $optionIndex + 1 ?>" data-link-id="<?= h($optionLink['id']) ?>" data-title="<?= h($optionLink['title']) ?>" data-active="<?= boolval_db($optionLink['is_active']) ? '1' : '0' ?>">Posisi <?= $optionIndex + 1 ?> · saat ini: <?= h($optionLink['title']) ?><?= !boolval_db($optionLink['is_active']) ? ' (nonaktif)' : '' ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                        <p class="add-link-hint" id="edit-order-hint">Posisi 1 paling atas. Tautan lain otomatis bergeser; tautan nonaktif ikut dihitung.</p>
                         <div class="edit-link-checks">
                             <label><input type="checkbox" name="is_active"> Aktif</label>
                             <label><input type="checkbox" name="featured"> Unggulan</label>
