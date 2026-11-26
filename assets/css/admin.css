@@ -652,3 +652,33 @@
 .dashboard table.links-table > thead > tr > th:nth-child(3) .dt-column-header { flex-direction: row; }
 .dashboard table.links-table > tbody > tr > td:nth-child(3) { text-align: center; }
 .dashboard .link-row-actions { justify-content: flex-start; }
+
+/* DataTables log aktivitas: header biru muda dan baris bersih seperti referensi. */
+.dashboard .activity-panel { padding: 26px; }
+.dashboard .activity-heading { margin-bottom: 26px; }
+.dashboard .activity-heading .activity-eyebrow { margin: 0 0 7px; color: #1790db; font-size: 10px; font-weight: 800; letter-spacing: .11em; }
+.dashboard .activity-heading h2 { color: #203e4e; font-size: 18px; }
+.dashboard .activity-heading p:not(.activity-eyebrow) { margin-top: 6px; color: #7b909d; font-size: 12px; }
+.dashboard .activity-scroll-hint { display: none; }
+.dashboard .activity-table-wrap { max-width: 100%; min-width: 0; overflow-x: auto; }
+.dashboard .activity-table-wrap.is-enhanced { overflow: visible; }
+.dashboard .activity-table-wrap:focus-visible { outline: 2px solid #52b8a9; outline-offset: 2px; border-radius: 8px; }
+.dashboard table.activity-table, .dashboard table.dataTable.activity-table { width: 100%; min-width: 850px; table-layout: fixed; border-collapse: collapse !important; }
+.dashboard table.dataTable.activity-table { margin: 0 !important; }
+.dashboard table.activity-table colgroup col:nth-child(1), .dashboard table.activity-table > thead > tr > th:nth-child(1) { width: 22%; }
+.dashboard table.activity-table colgroup col:nth-child(2), .dashboard table.activity-table > thead > tr > th:nth-child(2) { width: 18%; }
+.dashboard table.activity-table colgroup col:nth-child(3), .dashboard table.activity-table > thead > tr > th:nth-child(3) { width: 28%; }
+.dashboard table.activity-table colgroup col:nth-child(4), .dashboard table.activity-table > thead > tr > th:nth-child(4) { width: 14%; }
+.dashboard table.activity-table colgroup col:nth-child(5), .dashboard table.activity-table > thead > tr > th:nth-child(5) { width: 18%; }
+.dashboard table.activity-table > thead > tr > th { padding: 15px 16px; border-bottom: 1px solid #d6e8f7; background: #e3f1fd; color: #315369; font-size: 12px; font-weight: 700; white-space: nowrap; text-align: left; }
+.dashboard table.activity-table > tbody > tr > td { padding: 17px 16px; border-bottom: 1px solid #e8eff3; background: #fff; box-shadow: none; color: #4f6b79; font-size: 12px; vertical-align: middle; white-space: normal; overflow-wrap: anywhere; }
+.dashboard table.activity-table > tbody > tr:last-child > td { border-bottom: 0; }
+.dashboard table.activity-table > tbody > tr:hover > td { background: #f9fcfe; box-shadow: none; }
+.dashboard .activity-empty { padding: 16px; }
+@media (max-width: 760px) {
+  .dashboard .activity-panel { padding: 20px; }
+  .dashboard .activity-scroll-hint { display: block; margin: 0 0 10px; color: #839aa7; font-size: 11px; }
+}
+/* DataTables' stripe and sorted-column shadows are disabled for the clean log rows. */
+.dashboard table.dataTable.display.activity-table > tbody > tr > td,
+.dashboard table.dataTable.display.activity-table > tbody > tr:hover > td { box-shadow: none; }

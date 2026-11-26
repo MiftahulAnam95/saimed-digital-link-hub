@@ -102,6 +102,10 @@ foreach (['overview' => 'Ringkasan', 'links' => 'Kelola Tautan', 'activity' => '
     }
     if ($tab === 'activity') {
         expect_dashboard(str_contains($html, 'Log Aktivitas Pengunjung'), 'Log aktivitas harus tersedia');
+        expect_dashboard(str_contains($html, 'id="activity-table"') && str_contains($html, 'assets/js/dashboard-activity.js?v='), 'Aktivitas harus memakai DataTables');
+        expect_dashboard(str_contains($html, 'assets/vendor/datatables/dataTables.min.js') && str_contains($html, 'assets/vendor/datatables/dataTables.dataTables.min.css'), 'DataTables lokal harus dimuat pada aktivitas');
+        expect_dashboard(!str_contains($html, 'assets/vendor/sweetalert2/sweetalert2.min.js'), 'SweetAlert tidak perlu dimuat di aktivitas');
+        expect_dashboard(str_contains($html, 'id="activity-empty"'), 'Pesan kosong harus tersedia jika JavaScript tidak aktif');
     }
 }
 // Baris Instagram tersedia meskipun belum ada klik dan tidak mengubah insight.
@@ -160,4 +164,14 @@ ob_start();
 require __DIR__ . '/../templates/admin-dashboard.php';
 $wibActivity = ob_get_clean();
 expect_dashboard(str_contains($wibActivity, 'Waktu (WIB)') && str_contains($wibActivity, '01 Jan 2026 00:00'), 'Log aktivitas harus dikonversi ke WIB');
+expect_dashboard(str_contains($wibActivity, 'data-order="2025-12-31 17:00:00"'), 'Urutan aktivitas harus memakai UTC agar urut kronologis');
+$events = [];
+for ($i = 0; $i < 51; $i++) {
+    $events[] = ['target_label' => $i === 0 ? '<script>alert(1)</script>' : 'Halaman ' . $i, 'device' => 'Mobile', 'event_type' => 'view', 'created_at' => '2026-01-01 00:00:00', 'visitor_id' => 'visitor'];
+}
+ob_start();
+require __DIR__ . '/../templates/admin-dashboard.php';
+$activityHtml = ob_get_clean();
+expect_dashboard(substr_count($activityHtml, 'data-order="2026-01-01 00:00:00"') === 50, 'Hanya 50 event terbaru yang boleh ditampilkan');
+expect_dashboard(str_contains($activityHtml, '&lt;script&gt;alert(1)&lt;/script&gt;') && !str_contains($activityHtml, '<script>alert(1)</script>'), 'Label aktivitas harus di-escape');
 echo "Tes template dashboard berhasil.\n";

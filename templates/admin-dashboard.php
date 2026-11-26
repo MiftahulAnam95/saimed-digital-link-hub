@@ -24,6 +24,8 @@ $chartScript = __DIR__ . '/../assets/js/dashboard-chart.js';
 $chartScriptVersion = is_readable($chartScript) ? substr(hash_file('sha256', $chartScript), 0, 12) : '';
 $linksScript = __DIR__ . '/../assets/js/dashboard-links.js';
 $linksScriptVersion = is_readable($linksScript) ? substr(hash_file('sha256', $linksScript), 0, 12) : '';
+$activityScript = __DIR__ . '/../assets/js/dashboard-activity.js';
+$activityScriptVersion = is_readable($activityScript) ? substr(hash_file('sha256', $activityScript), 0, 12) : '';
 $deviceTotal = array_sum($devices);
 $mobileCount = (int) ($devices['Mobile'] ?? 0);
 $mobilePercent = $deviceTotal > 0 ? (int) round($mobileCount * 100 / $deviceTotal) : 0;
@@ -418,18 +420,22 @@ $metricIcons = [
             </section>
 
         <?php else: ?>
-            <section class="panel">
-                <h2>Log Aktivitas Pengunjung</h2>
-                <p>50 event terbaru · <?= h($periodLabel) ?></p>
-                <div class="table-wrap">
-                    <table>
+            <section class="panel activity-panel">
+                <div class="activity-heading">
+                    <p class="activity-eyebrow">AKTIVITAS PENGUNJUNG</p>
+                    <h2>Log Aktivitas Pengunjung</h2>
+                    <p>50 event terbaru · <?= h($periodLabel) ?></p>
+                </div>
+                <p class="activity-scroll-hint">Geser tabel ke samping untuk melihat semua kolom.</p>
+                <div class="activity-table-wrap" tabindex="0" role="region" aria-label="Tabel log aktivitas pengunjung; geser ke samping untuk melihat seluruh kolom">
+                    <table id="activity-table" class="display activity-table">
                         <thead>
                             <tr><th>Waktu (WIB)</th><th>Aktivitas</th><th>Label</th><th>Perangkat</th><th>Pengunjung</th></tr>
                         </thead>
                         <tbody>
                             <?php foreach (array_slice($events, 0, 50) as $event): ?>
                                 <tr>
-                                    <td><?= h(dashboard_wib($event['created_at'], 'd M Y H:i')) ?></td>
+                                    <td data-order="<?= h($event['created_at'] ?? '') ?>"><?= h(dashboard_wib($event['created_at'] ?? null, 'd M Y H:i')) ?></td>
                                     <td><?= h($event['event_type']) ?></td>
                                     <td><?= h($event['target_label'] ?? 'Halaman publik') ?></td>
                                     <td><?= h($event['device']) ?></td>
@@ -438,7 +444,7 @@ $metricIcons = [
                             <?php endforeach; ?>
                         </tbody>
                     </table>
-                    <?php if (!$events): ?><p>Belum ada aktivitas.</p><?php endif; ?>
+                    <?php if (!$events): ?><p class="activity-empty" id="activity-empty">Belum ada aktivitas.</p><?php endif; ?>
                 </div>
             </section>
         <?php endif; ?>
@@ -449,11 +455,14 @@ $metricIcons = [
 </div>
 
 <?php if ($tab === 'overview'): ?><script src="assets/js/dashboard-chart.js?v=<?= h($chartScriptVersion) ?>" defer></script><?php endif; ?>
-<?php if ($tab === 'links'): ?>
+<?php if (in_array($tab, ['links', 'activity'], true)): ?>
 <script src="assets/vendor/jquery/jquery.min.js" defer></script>
 <script src="assets/vendor/datatables/dataTables.min.js" defer></script>
+<?php endif; ?>
+<?php if ($tab === 'links'): ?>
 <script src="assets/vendor/sweetalert2/sweetalert2.min.js" defer></script>
 <script src="assets/js/dashboard-links.js?v=<?= h($linksScriptVersion) ?>" defer></script>
 <?php endif; ?>
+<?php if ($tab === 'activity'): ?><script src="assets/js/dashboard-activity.js?v=<?= h($activityScriptVersion) ?>" defer></script><?php endif; ?>
 <script src="assets/js/dashboard-session.js?v=<?= h($dashboardScriptVersion) ?>" defer></script>
 <?php require __DIR__ . '/../includes/footer.php'; ?>

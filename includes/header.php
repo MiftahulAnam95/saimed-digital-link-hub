@@ -18,8 +18,10 @@ $admin_css_version = $admin_page && is_readable($admin_css_path) ? substr(hash_f
     <link rel="icon" type="image/x-icon" href="favicon.ico">
     <link rel="stylesheet" href="assets/css/style.css?v=<?= h($style_css_version) ?>">
     <?php if ($admin_page): ?>
-        <?php if (($tab ?? '') === 'links'): ?>
+        <?php if (in_array($tab ?? '', ['links', 'activity'], true)): ?>
             <link rel="stylesheet" href="assets/vendor/datatables/dataTables.dataTables.min.css">
+        <?php endif; ?>
+        <?php if (($tab ?? '') === 'links'): ?>
             <link rel="stylesheet" href="assets/vendor/sweetalert2/sweetalert2.min.css">
         <?php endif; ?>
         <link rel="stylesheet" href="assets/css/admin.css?v=<?= h($admin_css_version) ?>">
