@@ -648,4 +648,5 @@
 .dashboard .links-name { min-width: 0; }
 .dashboard .links-name strong { min-width: 0; }
 .dashboard .links-url { max-width: 100%; }
+.dashboard table.links-table > tbody > tr > td:nth-child(3) { text-align: center; }
 .dashboard .link-row-actions { justify-content: flex-start; }
