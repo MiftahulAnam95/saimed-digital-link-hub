@@ -5,3 +5,5 @@ dist/
 build/
 .next/
 .DS_Store
+# Gambar unggahan adalah data aplikasi, bukan source code.
+/config/uploads/

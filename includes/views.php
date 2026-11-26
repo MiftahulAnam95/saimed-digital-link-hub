@@ -15,8 +15,9 @@ function avatar(bool $compact = false): void
 function icon(string $name): string
 {
     $allowedIcons = ['instagram', 'whatsapp', 'shopee', 'tokopedia', 'website', 'link'];
-    $iconName = in_array($name, $allowedIcons, true) ? $name : 'link';
-    $iconPath = 'assets/images/icons/' . $iconName . '.svg';
+    $uploaded = uploaded_icon_path($name) !== null;
+    $iconName = $uploaded ? 'uploaded' : (in_array($name, $allowedIcons, true) ? $name : 'link');
+    $iconPath = $uploaded ? '?api=icon&file=' . rawurlencode($name) : 'assets/images/icons/' . $iconName . '.svg';
 
     // Setiap SVG dimuat terpisah agar ID gradient dan clipPath tidak bertabrakan.
     return '<span class="platform-icon icon-' . h($iconName) . '" aria-hidden="true">'

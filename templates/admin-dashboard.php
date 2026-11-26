@@ -22,6 +22,8 @@ $dashboardScript = __DIR__ . '/../assets/js/dashboard-session.js';
 $dashboardScriptVersion = is_readable($dashboardScript) ? substr(hash_file('sha256', $dashboardScript), 0, 12) : '';
 $chartScript = __DIR__ . '/../assets/js/dashboard-chart.js';
 $chartScriptVersion = is_readable($chartScript) ? substr(hash_file('sha256', $chartScript), 0, 12) : '';
+$linksScript = __DIR__ . '/../assets/js/dashboard-links.js';
+$linksScriptVersion = is_readable($linksScript) ? substr(hash_file('sha256', $linksScript), 0, 12) : '';
 $deviceTotal = array_sum($devices);
 $mobileCount = (int) ($devices['Mobile'] ?? 0);
 $mobilePercent = $deviceTotal > 0 ? (int) round($mobileCount * 100 / $deviceTotal) : 0;
@@ -287,23 +289,62 @@ $metricIcons = [
             </div>
 
         <?php elseif ($tab === 'links'): ?>
-            <section class="panel">
-                <h2>Tambah Tautan Baru</h2>
-                <form method="post" class="add-form">
-                    <?php token_input(); ?>
-                    <input type="hidden" name="action" value="add">
-                    <input name="title" aria-label="Nama tautan" placeholder="Nama tautan" maxlength="80" required>
-                    <input name="url" aria-label="URL tautan" placeholder="https://contoh.com" required>
-                    <select name="icon" aria-label="Ikon tautan"><?php icon_options(); ?></select>
-                    <button class="button primary">Tambah</button>
-                </form>
-            </section>
+            <section class="panel links-panel">
+                <div class="links-heading">
+                    <div>
+                        <h2>Tautan Publik</h2>
+                        <p>Kelola tautan yang tampil di halaman publik.</p>
+                    </div>
+                    <button class="button primary add-link-trigger" type="button" id="open-add-link" aria-haspopup="dialog" aria-controls="add-link-dialog" hidden>
+                        <span aria-hidden="true">+</span> Tambah Tautan Baru
+                    </button>
+                </div>
 
-            <section class="panel">
-                <h2>Tautan Publik</h2>
+                <dialog class="add-link-dialog" id="add-link-dialog" aria-labelledby="add-link-title" aria-describedby="add-link-description">
+                    <div class="add-link-dialog-heading">
+                        <div>
+                            <p class="add-link-eyebrow">KELOLA TAUTAN</p>
+                            <h2 id="add-link-title">Tambah Tautan Baru</h2>
+                            <p id="add-link-description">Tambahkan tautan untuk ditampilkan di halaman publik.</p>
+                        </div>
+                        <button class="add-link-close" type="button" aria-label="Tutup dialog">&times;</button>
+                    </div>
+                    <form method="post" enctype="multipart/form-data" class="add-link-form">
+                        <?php token_input(); ?>
+                        <input type="hidden" name="action" value="add">
+                        <label for="new-link-title">Nama</label>
+                        <input id="new-link-title" name="title" placeholder="Contoh: Toko Shopee" maxlength="80" required autofocus>
+                        <label for="new-link-url">URL</label>
+                        <input id="new-link-url" name="url" placeholder="https://contoh.com" required>
+                        <label for="new-link-icon">Logo/Icon</label>
+                        <input id="new-link-icon" name="icon_file" type="file" accept="image/png,image/jpeg" required>
+                        <p class="add-link-hint">PNG atau JPG, maksimal 2 MB. Logo ditampilkan dengan ukuran seragam.</p>
+                        <div class="add-link-actions">
+                            <button class="button add-link-cancel" type="button">Batal</button>
+                            <button class="button primary" type="submit">Tambah Tautan</button>
+                        </div>
+                    </form>
+                </dialog>
+                <noscript>
+                    <details class="add-link-fallback">
+                        <summary>Tambah Tautan Baru</summary>
+                        <form method="post" enctype="multipart/form-data" class="add-link-form">
+                            <?php token_input(); ?>
+                            <input type="hidden" name="action" value="add">
+                            <label for="fallback-link-title">Nama</label>
+                            <input id="fallback-link-title" name="title" placeholder="Contoh: Toko Shopee" maxlength="80" required>
+                            <label for="fallback-link-url">URL</label>
+                            <input id="fallback-link-url" name="url" placeholder="https://contoh.com" required>
+                            <label for="fallback-link-icon">Logo/Icon</label>
+                            <input id="fallback-link-icon" name="icon_file" type="file" accept="image/png,image/jpeg" required>
+                            <p class="add-link-hint">PNG atau JPG, maksimal 2 MB.</p>
+                            <div class="add-link-actions"><button class="button primary" type="submit">Tambah Tautan</button></div>
+                        </form>
+                    </details>
+                </noscript>
                 <?php foreach ($allLinks as $link): ?>
                     <div class="editor">
-                        <form method="post" class="edit-form">
+                        <form method="post" enctype="multipart/form-data" class="edit-form">
                             <?php token_input(); ?>
                             <input type="hidden" name="action" value="save">
                             <input type="hidden" name="id" value="<?= h($link['id']) ?>">
@@ -313,8 +354,9 @@ $metricIcons = [
                             <label>URL
                                 <input name="url" value="<?= h($link['url']) ?>" required>
                             </label>
-                            <label>Ikon
-                                <select name="icon"><?php icon_options($link['icon']); ?></select>
+                            <label>Logo/Icon (opsional: ganti)
+                                <span class="edit-link-icon"><?= icon($link['icon']) ?><span>Logo saat ini</span></span>
+                                <input name="icon_file" type="file" accept="image/png,image/jpeg">
                             </label>
                             <label>Urutan
                                 <input name="sort_order" type="number" value="<?= h($link['sort_order']) ?>">
@@ -369,5 +411,6 @@ $metricIcons = [
 </div>
 
 <?php if ($tab === 'overview'): ?><script src="assets/js/dashboard-chart.js?v=<?= h($chartScriptVersion) ?>" defer></script><?php endif; ?>
+<?php if ($tab === 'links'): ?><script src="assets/js/dashboard-links.js?v=<?= h($linksScriptVersion) ?>" defer></script><?php endif; ?>
 <script src="assets/js/dashboard-session.js?v=<?= h($dashboardScriptVersion) ?>" defer></script>
 <?php require __DIR__ . '/../includes/footer.php'; ?>

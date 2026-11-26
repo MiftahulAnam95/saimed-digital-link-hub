@@ -509,3 +509,31 @@
 .chart-tooltip b { margin-left: auto; color: #244656; }
 
 .dashboard .panel .chart-help { margin: 8px 0 14px; color: #8299a5; font-size: 10px; }
+
+/* Dialog tambah tautan pada halaman Kelola Tautan. */
+.dashboard .links-heading { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 18px; }
+.dashboard .add-link-trigger { display: inline-flex; align-items: center; justify-content: center; gap: 8px; flex-shrink: 0; }
+.dashboard .add-link-trigger[hidden] { display: none; }
+.dashboard .add-link-trigger span { font-size: 19px; line-height: 1; }
+.dashboard .add-link-dialog { width: min(480px, calc(100% - 32px)); max-height: calc(100% - 32px); margin: auto; padding: 26px; overflow: auto; border: 1px solid #dfe9ee; border-radius: 16px; background: #fff; box-shadow: 0 24px 70px #173b5040; color: #365669; }
+.dashboard .add-link-dialog::backdrop { background: rgba(22, 42, 54, .55); }
+.dashboard .add-link-dialog-heading { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; }
+.dashboard .add-link-dialog-heading h2 { font-size: 19px; }
+.dashboard .add-link-dialog-heading .add-link-eyebrow { margin: 0 0 7px; color: #1786d2; font-size: 10px; font-weight: 800; letter-spacing: .1em; }
+.dashboard .add-link-close { flex-shrink: 0; width: 32px; height: 32px; padding: 0; border: 0; border-radius: 8px; background: #f2f7fa; color: #607d8c; font-size: 24px; line-height: 1; cursor: pointer; }
+.dashboard .add-link-close:hover { background: #e5eff5; }
+.dashboard .add-link-form { display: flex; flex-direction: column; gap: 8px; margin-top: 22px; }
+.dashboard .add-link-form label { margin-top: 5px; color: #466778; font-size: 12px; font-weight: 700; }
+.dashboard .add-link-form input:not([type='hidden']), .dashboard .add-link-form select { width: 100%; min-width: 0; padding: 11px 12px; }
+.dashboard .add-link-form .add-link-hint { margin: 0; color: #8299a5; font-size: 11px; }
+.dashboard .add-link-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 16px; }
+.dashboard .add-link-fallback { margin-bottom: 20px; color: #1686d4; }
+.dashboard .add-link-fallback summary { cursor: pointer; font-weight: 700; }
+@media (max-width: 520px) {
+  .dashboard .links-heading { align-items: flex-start; flex-direction: column; }
+  .dashboard .add-link-dialog { padding: 20px; }
+  .dashboard .add-link-actions .button { flex: 1; }
+}
+.dashboard .edit-link-icon { display: flex; align-items: center; gap: 7px; margin: 8px 0; font-size: 11px; font-weight: 400; }
+.dashboard .edit-link-icon .platform-icon { display: inline-flex; width: 32px; height: 32px; padding: 3px; }
+.dashboard input[type='file'] { font-size: 12px; }
