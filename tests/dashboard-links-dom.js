@@ -133,6 +133,11 @@ async function main() {
     assert.equal(style(selector).backgroundColor, color, `${selector} harus memakai warna isi`);
     assert.equal(style(selector).color, 'rgb(255, 255, 255)');
   }
+  for (const selector of ['.link-status.is-active', '.link-status.is-inactive']) {
+    assert.equal(style(selector).minHeight, style('.button.edit-link-trigger').minHeight, 'Tinggi status harus selaras dengan tombol Edit');
+    assert.equal(style(selector).borderRadius, style('.button.edit-link-trigger').borderRadius, 'Sudut status harus selaras dengan tombol Edit');
+    assert.equal(style(selector).whiteSpace, 'nowrap', 'Status tidak boleh terpotong ke beberapa baris');
+  }
   appearance.window.close();
   console.log('Tes DataTables, dialog edit, dan SweetAlert2 berhasil.');
 }
