@@ -547,7 +547,7 @@
 .dashboard .links-name .platform-icon { flex: 0 0 36px; width: 36px; height: 36px; padding: 5px; border-radius: 8px; background: #f2f8fb; }
 .dashboard .links-name strong { overflow-wrap: anywhere; }
 .dashboard .links-url { display: block; max-width: 260px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.dashboard .link-status { display: inline-block; padding: 5px 9px; border-radius: 20px; font-size: 11px; font-weight: 700; }
+.dashboard .link-status { display: inline-block; padding: 5px 9px; border-radius: 9px; font-size: 11px; font-weight: 700; }
 .dashboard .link-status.is-active { background: #087a54; color: #fff; }
 .dashboard .link-status.is-inactive { background: #526574; color: #fff; }
 .dashboard .link-row-actions { display: flex; gap: 8px; align-items: center; }
@@ -600,7 +600,7 @@
 .dashboard .links-name .platform-icon { flex: 0 0 40px; width: 40px; height: 40px; padding: 7px; border: 1px solid #edf3f6; border-radius: 11px; background: #f6fafc; }
 .dashboard .links-name strong { color: #294d5f; font-size: 12px; font-weight: 700; }
 .dashboard .links-url { max-width: 240px; color: #4f6b79; }
-.dashboard .link-status { display: inline-flex; align-items: center; padding: 6px; white-space: nowrap; }
+.dashboard .link-status { display: inline-flex; align-items: center; min-height: 34px; padding: 7px 6px; white-space: nowrap; }
 .dashboard .link-featured { color: #9aabb5; font-weight: 600; }
 .dashboard .link-featured.is-featured { color: #b57e21; }
 .dashboard .link-featured.is-featured::before { margin-right: 5px; content: '★'; }
