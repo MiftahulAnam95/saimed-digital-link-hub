@@ -636,7 +636,7 @@
 }
 .dashboard .dt-container .dt-length select.dt-input { border: 1px solid #dfe9ee; border-radius: 9px; color: #5e7886; }
 
-/* Lebar kolom seimbang; aksi diratakan ke sisi kanan tabel. */
+/* Lebar kolom seimbang; isi kolom aksi diratakan ke kiri. */
 .dashboard table.links-table { min-width: 980px; table-layout: fixed; }
 .dashboard table.dataTable.links-table { min-width: 980px; table-layout: fixed; }
 .dashboard table.links-table colgroup col:nth-child(1), .dashboard table.links-table > thead > tr > th:nth-child(1) { width: 24%; }
@@ -648,5 +648,4 @@
 .dashboard .links-name { min-width: 0; }
 .dashboard .links-name strong { min-width: 0; }
 .dashboard .links-url { max-width: 100%; }
-.dashboard table.links-table > tbody > tr > td:last-child { text-align: right; }
-.dashboard .link-row-actions { justify-content: flex-end; }
+.dashboard .link-row-actions { justify-content: flex-start; }
