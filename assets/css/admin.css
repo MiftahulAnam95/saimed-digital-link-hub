@@ -548,8 +548,8 @@
 .dashboard .links-name strong { overflow-wrap: anywhere; }
 .dashboard .links-url { display: block; max-width: 260px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .dashboard .link-status { display: inline-block; padding: 5px 9px; border-radius: 20px; font-size: 11px; font-weight: 700; }
-.dashboard .link-status.is-active { background: #e9f8f1; color: #168158; }
-.dashboard .link-status.is-inactive { background: #f0f3f5; color: #6f818a; }
+.dashboard .link-status.is-active { background: #087a54; color: #fff; }
+.dashboard .link-status.is-inactive { background: #526574; color: #fff; }
 .dashboard .link-row-actions { display: flex; gap: 8px; align-items: center; }
 .dashboard .link-row-actions form { margin: 0; }
 .dashboard .link-row-actions .button { padding: 7px 10px; font-size: 11px; }
@@ -596,25 +596,21 @@
 .dashboard .dt-container .dt-search input::placeholder { color: #a2b2bb; }
 .dashboard .dt-container .dt-length select { width: auto; min-width: 64px; height: 39px; margin: 0; padding: 8px 26px 8px 10px; background-color: #fbfdfe; }
 .dashboard table.dataTable.links-table { min-width: 850px; width: 100%; margin: 0 !important; border-collapse: collapse !important; }
-.dashboard table.dataTable.links-table > thead > tr > th { padding: 14px 30px 14px 16px; border-bottom: 1px solid #e9f0f4; background: #f7fafc; color: #849aa7; font-size: 10px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; white-space: nowrap; }
-.dashboard table.dataTable.links-table > tbody > tr > td { padding: 15px 16px; border-bottom: 1px solid #edf2f5; background: #fff; box-shadow: none; color: #5e7886; font-size: 12px; vertical-align: middle; }
-.dashboard table.dataTable.links-table > tbody > tr:last-child > td { border-bottom: 0; }
-.dashboard table.dataTable.links-table > tbody > tr:hover > td { background: #f9fcfe; box-shadow: none; }
 .dashboard .links-name { gap: 12px; }
 .dashboard .links-name .platform-icon { flex: 0 0 40px; width: 40px; height: 40px; padding: 7px; border: 1px solid #edf3f6; border-radius: 11px; background: #f6fafc; }
 .dashboard .links-name strong { color: #294d5f; font-size: 12px; font-weight: 700; }
-.dashboard .links-url { max-width: 240px; color: #728c9a; }
-.dashboard .link-status { display: inline-flex; align-items: center; gap: 6px; padding: 6px 10px; }
-.dashboard .link-status::before { width: 6px; height: 6px; border-radius: 50%; background: currentColor; content: ''; }
+.dashboard .links-url { max-width: 240px; color: #4f6b79; }
+.dashboard .link-status { display: inline-flex; align-items: center; padding: 6px; white-space: nowrap; }
 .dashboard .link-featured { color: #9aabb5; font-weight: 600; }
 .dashboard .link-featured.is-featured { color: #b57e21; }
 .dashboard .link-featured.is-featured::before { margin-right: 5px; content: '★'; }
 .dashboard .link-row-actions { gap: 6px; }
-.dashboard .link-row-actions .button { display: inline-flex; align-items: center; justify-content: center; gap: 5px; min-height: 34px; padding: 7px 9px; background: #fff; font-weight: 700; white-space: nowrap; }
+.dashboard .link-row-actions .button { display: inline-flex; align-items: center; justify-content: center; gap: 5px; min-height: 34px; padding: 7px 9px; font-weight: 700; white-space: nowrap; }
 .dashboard .link-row-actions .button svg { width: 14px; height: 14px; }
-.dashboard .link-row-actions .edit-link-trigger { border-color: #d7eaf7; color: #1687d4; }
-.dashboard .link-row-actions .edit-link-trigger:hover { background: #eef8ff; }
-.dashboard .link-row-actions .danger:hover { background: #fff4f3; }
+.dashboard .link-row-actions .button.edit-link-trigger { border-color: #0875c1; background: #0875c1; color: #fff; }
+.dashboard .link-row-actions .button.edit-link-trigger:hover { border-color: #075d9c; background: #075d9c; }
+.dashboard .link-row-actions .button.danger { border-color: #b53631; background: #b53631; color: #fff; }
+.dashboard .link-row-actions .button.danger:hover { border-color: #902923; background: #902923; }
 .dashboard .dt-container .dt-info { padding: 0; color: #8a9fab; font-size: 11px; }
 .dashboard .dt-container .dt-paging { padding: 0; }
 .dashboard .dt-container .dt-paging .dt-paging-button { min-width: 34px; min-height: 34px; margin-left: 3px; padding: 6px 9px; border: 1px solid transparent; border-radius: 8px; color: #68828f !important; font-size: 11px; }
@@ -670,9 +666,14 @@
 .dashboard table.activity-table colgroup col:nth-child(3), .dashboard table.activity-table > thead > tr > th:nth-child(3) { width: 28%; }
 .dashboard table.activity-table colgroup col:nth-child(4), .dashboard table.activity-table > thead > tr > th:nth-child(4) { width: 14%; }
 .dashboard table.activity-table colgroup col:nth-child(5), .dashboard table.activity-table > thead > tr > th:nth-child(5) { width: 18%; }
+/* Header dan baris yang konsisten untuk tabel aktivitas dan tautan. */
+.dashboard table.links-table > thead > tr > th,
 .dashboard table.activity-table > thead > tr > th { padding: 15px 16px; border-bottom: 1px solid #d6e8f7; background: #e3f1fd; color: #315369; font-size: 12px; font-weight: 700; white-space: nowrap; text-align: left; }
+.dashboard table.links-table > tbody > tr > td,
 .dashboard table.activity-table > tbody > tr > td { padding: 17px 16px; border-bottom: 1px solid #e8eff3; background: #fff; box-shadow: none; color: #4f6b79; font-size: 12px; vertical-align: middle; white-space: normal; overflow-wrap: anywhere; }
+.dashboard table.links-table > tbody > tr:last-child > td,
 .dashboard table.activity-table > tbody > tr:last-child > td { border-bottom: 0; }
+.dashboard table.links-table > tbody > tr:hover > td,
 .dashboard table.activity-table > tbody > tr:hover > td { background: #f9fcfe; box-shadow: none; }
 .dashboard .activity-empty { padding: 16px; }
 @media (max-width: 760px) {
@@ -680,5 +681,7 @@
   .dashboard .activity-scroll-hint { display: block; margin: 0 0 10px; color: #839aa7; font-size: 11px; }
 }
 /* DataTables' stripe and sorted-column shadows are disabled for the clean log rows. */
+.dashboard table.dataTable.display.links-table > tbody > tr > td,
+.dashboard table.dataTable.display.links-table > tbody > tr:hover > td,
 .dashboard table.dataTable.display.activity-table > tbody > tr > td,
 .dashboard table.dataTable.display.activity-table > tbody > tr:hover > td { box-shadow: none; }

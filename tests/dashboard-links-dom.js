@@ -113,6 +113,27 @@ async function main() {
   assert.equal(computed(alignment.window.document.querySelector('td:last-child')).textAlign, 'left');
   assert.equal(computed(alignment.window.document.querySelector('.link-row-actions')).justifyContent, 'flex-start');
   alignment.window.close();
+  // Tampilan header dan baris kedua DataTables sama; status dan aksi memakai warna isi.
+  const appearance = new JSDOM('<style></style><div class="dashboard"><table class="dataTable display links-table"><thead><tr><th>Nama</th></tr></thead><tbody><tr><td><span class="link-status is-active">Aktif</span><span class="link-status is-inactive">Nonaktif</span><div class="link-row-actions"><button class="button edit-link-trigger">Edit</button><button class="button danger">Hapus</button></div></td></tr></tbody></table><table class="dataTable display activity-table"><thead><tr><th>Waktu</th></tr></thead><tbody><tr><td>Waktu</td></tr></tbody></table></div>');
+  appearance.window.document.querySelector('style').textContent = ['assets/css/style.css', 'assets/vendor/datatables/dataTables.dataTables.min.css', 'assets/css/admin.css'].map(read).join('\n');
+  const style = selector => appearance.window.getComputedStyle(appearance.window.document.querySelector(selector));
+  for (const property of ['backgroundColor', 'color', 'fontSize', 'fontWeight', 'padding']) {
+    assert.equal(style('.links-table th')[property], style('.activity-table th')[property], `Header harus sama: ${property}`);
+  }
+  for (const property of ['backgroundColor', 'color', 'fontSize', 'padding', 'boxShadow']) {
+    assert.equal(style('.links-table td')[property], style('.activity-table td')[property], `Baris harus sama: ${property}`);
+  }
+  const expected = {
+    '.link-status.is-active': 'rgb(8, 122, 84)',
+    '.link-status.is-inactive': 'rgb(82, 101, 116)',
+    '.button.edit-link-trigger': 'rgb(8, 117, 193)',
+    '.button.danger': 'rgb(181, 54, 49)',
+  };
+  for (const [selector, color] of Object.entries(expected)) {
+    assert.equal(style(selector).backgroundColor, color, `${selector} harus memakai warna isi`);
+    assert.equal(style(selector).color, 'rgb(255, 255, 255)');
+  }
+  appearance.window.close();
   console.log('Tes DataTables, dialog edit, dan SweetAlert2 berhasil.');
 }
 main().catch(error => { console.error(error); process.exitCode = 1; });
