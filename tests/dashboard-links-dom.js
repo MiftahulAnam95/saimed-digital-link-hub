@@ -15,7 +15,7 @@ const rows = Array.from({ length: 15 }, (_, i) => `
 const html = process.env.DASHBOARD_HTML ? fs.readFileSync(process.env.DASHBOARD_HTML, 'utf8') : `<!doctype html><html><body>
   <p id="dashboard-notice" data-notice-type="error">&lt;gambar&gt; gagal</p>
   <button id="open-add-link" hidden>Tambah</button><dialog id="add-link-dialog"><button class="add-link-close">X</button><input id="new-link-title"><button class="add-link-cancel">Batal</button></dialog>
-  <div class="links-table-wrap" tabindex="0"><table id="links-table"><thead><tr><th>Nama</th><th>URL</th><th>Urutan</th><th>Status</th><th>Unggulan</th><th>Aksi</th></tr></thead><tbody>${rows}</tbody></table></div>
+  <div class="links-table-wrap" tabindex="0"><table id="links-table"><thead><tr><th>Nama</th><th>URL</th><th class="dt-type-numeric"><div class="dt-column-header">Urutan</div></th><th>Status</th><th>Unggulan</th><th>Aksi</th></tr></thead><tbody>${rows}</tbody></table></div>
   <dialog id="edit-link-dialog"><button class="edit-link-close">X</button><form id="edit-link-form">
   <input name="id"><input name="title" id="edit-link-name"><input name="url"><input name="sort_order"><input type="checkbox" name="is_active"><input type="checkbox" name="featured"><input type="file" name="icon_file"><span id="edit-current-icon"></span><button class="edit-link-cancel" type="button">Batal</button></form></dialog>
   </body></html>`;
@@ -98,10 +98,13 @@ async function main() {
   assert.equal(successNotice.hidden, true);
   success.window.close();
   // Isi Urutan di tengah; judul dan tombol Aksi tetap rata kiri.
-  const alignment = new JSDOM('<style></style><div class="dashboard"><table class="dataTable links-table"><thead><tr><th><div class="dt-column-header">Nama</div></th><th>URL</th><th>Urutan</th><th>Status</th><th>Unggulan</th><th><div class="dt-column-header">Aksi</div></th></tr></thead><tbody><tr><td>Nama</td><td>URL</td><td class="dt-type-numeric">1</td><td>Aktif</td><td>Tidak</td><td><div class="link-row-actions">Tombol</div></td></tr></tbody></table></div>');
+  const alignment = new JSDOM('<style></style><div class="dashboard"><table class="dataTable links-table"><thead><tr><th><div class="dt-column-header">Nama</div></th><th>URL</th><th class="dt-type-numeric"><div class="dt-column-header">Urutan</div></th><th>Status</th><th>Unggulan</th><th><div class="dt-column-header">Aksi</div></th></tr></thead><tbody><tr><td>Nama</td><td>URL</td><td class="dt-type-numeric">1</td><td>Aktif</td><td>Tidak</td><td><div class="link-row-actions">Tombol</div></td></tr></tbody></table></div>');
   alignment.window.document.querySelector('style').textContent = ['assets/css/style.css', 'assets/vendor/datatables/dataTables.dataTables.min.css', 'assets/css/admin.css'].map(read).join('\n');
   const headers = alignment.window.document.querySelectorAll('th');
   const computed = element => alignment.window.getComputedStyle(element);
+  assert.equal(computed(headers[2]).textAlign, 'left');
+  assert.equal(computed(headers[2].firstElementChild).flexDirection, 'row');
+  assert.equal(computed(headers[1]).width, '31%');
   assert.equal(computed(headers[5]).textAlign, 'left');
   assert.equal(computed(headers[5].firstElementChild).justifyContent, computed(headers[0].firstElementChild).justifyContent);
   assert.equal(computed(headers[5]).paddingRight, computed(headers[0]).paddingRight);
