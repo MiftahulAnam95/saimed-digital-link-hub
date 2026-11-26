@@ -572,3 +572,66 @@
 }
 .dashboard .edit-link-fallback .check { display: flex; align-items: center; gap: 7px; }
 .dashboard .edit-link-fallback .check input { width: auto; margin: 0; padding: 0; accent-color: #188fe5; }
+
+/* Tata letak daftar tautan: kontrol tetap terlihat saat tabel digeser. */
+.dashboard .links-panel { padding: 26px; }
+.dashboard .links-heading { gap: 24px; margin-bottom: 26px; }
+.dashboard .links-heading .links-eyebrow { margin: 0 0 7px; color: #1790db; font-size: 10px; font-weight: 800; letter-spacing: .11em; }
+.dashboard .links-heading h2 { font-size: 18px; color: #203e4e; }
+.dashboard .links-heading p:not(.links-eyebrow) { margin-top: 6px; color: #7b909d; font-size: 12px; }
+.dashboard .links-heading .add-link-trigger { min-height: 41px; padding: 10px 15px; font-size: 12px; box-shadow: 0 4px 10px rgba(24, 143, 229, .18); }
+.dashboard .add-link-trigger svg { width: 17px; height: 17px; }
+.dashboard .links-table-wrap { max-width: 100%; overflow-x: auto; }
+.dashboard .links-table-wrap.is-enhanced { overflow: visible; }
+.dashboard .links-table-wrap:focus-visible, .dashboard .dt-layout-table:focus-visible { outline: 2px solid #52b8a9; outline-offset: 2px; border-radius: 8px; }
+.dashboard .links-scroll-hint { display: none; }
+.dashboard .dt-container { font-size: 12px; color: #78909d; }
+.dashboard .dt-container .dt-layout-row { align-items: center; gap: 12px; margin: 0; }
+.dashboard .dt-container .dt-layout-row:first-child { padding: 0 0 20px; }
+.dashboard .dt-container .dt-layout-row:last-child { padding: 16px 0 0; }
+.dashboard .dt-container .dt-layout-table { overflow-x: auto; border: 1px solid #e8eff3; border-radius: 10px; }
+.dashboard .dt-container .dt-layout-table > .dt-layout-cell { min-width: 100%; }
+.dashboard .dt-container .dt-search, .dashboard .dt-container .dt-length { display: flex; align-items: center; gap: 9px; margin: 0; color: #6c8492; font-size: 12px; font-weight: 600; }
+.dashboard .dt-container .dt-search input { width: 230px; height: 39px; margin: 0; padding: 9px 12px 9px 35px; background: #fbfdfe url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%238ea4b0' stroke-width='2' stroke-linecap='round'%3E%3Ccircle cx='11' cy='11' r='7'/%3E%3Cpath d='m16 16 4 4'/%3E%3C/svg%3E") no-repeat 12px center; }
+.dashboard .dt-container .dt-search input::placeholder { color: #a2b2bb; }
+.dashboard .dt-container .dt-length select { width: auto; min-width: 64px; height: 39px; margin: 0; padding: 8px 26px 8px 10px; background-color: #fbfdfe; }
+.dashboard table.dataTable.links-table { min-width: 850px; width: 100%; margin: 0 !important; border-collapse: collapse !important; }
+.dashboard table.dataTable.links-table > thead > tr > th { padding: 14px 30px 14px 16px; border-bottom: 1px solid #e9f0f4; background: #f7fafc; color: #849aa7; font-size: 10px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; white-space: nowrap; }
+.dashboard table.dataTable.links-table > tbody > tr > td { padding: 15px 16px; border-bottom: 1px solid #edf2f5; background: #fff; box-shadow: none; color: #5e7886; font-size: 12px; vertical-align: middle; }
+.dashboard table.dataTable.links-table > tbody > tr:last-child > td { border-bottom: 0; }
+.dashboard table.dataTable.links-table > tbody > tr:hover > td { background: #f9fcfe; box-shadow: none; }
+.dashboard .links-name { gap: 12px; }
+.dashboard .links-name .platform-icon { flex: 0 0 40px; width: 40px; height: 40px; padding: 7px; border: 1px solid #edf3f6; border-radius: 11px; background: #f6fafc; }
+.dashboard .links-name strong { color: #294d5f; font-size: 12px; font-weight: 700; }
+.dashboard .links-url { max-width: 240px; color: #728c9a; }
+.dashboard .link-status { display: inline-flex; align-items: center; gap: 6px; padding: 6px 10px; }
+.dashboard .link-status::before { width: 6px; height: 6px; border-radius: 50%; background: currentColor; content: ''; }
+.dashboard .link-featured { color: #9aabb5; font-weight: 600; }
+.dashboard .link-featured.is-featured { color: #b57e21; }
+.dashboard .link-featured.is-featured::before { margin-right: 5px; content: '★'; }
+.dashboard .link-row-actions { gap: 6px; }
+.dashboard .link-row-actions .button { display: inline-flex; align-items: center; justify-content: center; gap: 5px; min-height: 34px; padding: 7px 9px; background: #fff; font-weight: 700; white-space: nowrap; }
+.dashboard .link-row-actions .button svg { width: 14px; height: 14px; }
+.dashboard .link-row-actions .edit-link-trigger { border-color: #d7eaf7; color: #1687d4; }
+.dashboard .link-row-actions .edit-link-trigger:hover { background: #eef8ff; }
+.dashboard .link-row-actions .danger:hover { background: #fff4f3; }
+.dashboard .dt-container .dt-info { padding: 0; color: #8a9fab; font-size: 11px; }
+.dashboard .dt-container .dt-paging { padding: 0; }
+.dashboard .dt-container .dt-paging .dt-paging-button { min-width: 34px; min-height: 34px; margin-left: 3px; padding: 6px 9px; border: 1px solid transparent; border-radius: 8px; color: #68828f !important; font-size: 11px; }
+.dashboard .dt-container .dt-paging .dt-paging-button.current, .dashboard .dt-container .dt-paging .dt-paging-button.current:hover { border-color: #d6ebf9; background: #edf7fe; color: #147fca !important; font-weight: 700; }
+.dashboard .dt-container .dt-paging .dt-paging-button:hover:not(.disabled):not(.current) { border-color: #e2edf3; background: #f4f9fc; color: #2876a8 !important; }
+.dashboard .dt-container .dt-paging .dt-paging-button.disabled { opacity: .5; }
+@media (max-width: 760px) {
+  .dashboard .links-panel { padding: 20px; }
+  .dashboard .links-scroll-hint { display: block; margin: 0 0 10px; color: #839aa7; font-size: 11px; }
+  .dashboard .dt-container .dt-layout-row { flex-wrap: wrap; }
+  .dashboard .dt-container .dt-layout-cell { margin: 0; }
+  .dashboard .dt-container .dt-layout-row:first-child, .dashboard .dt-container .dt-layout-row:last-child { gap: 14px; }
+}
+@media (max-width: 520px) {
+  .dashboard .links-heading { align-items: stretch; gap: 16px; }
+  .dashboard .links-heading .add-link-trigger { align-self: flex-start; }
+  .dashboard .dt-container .dt-search { flex-wrap: wrap; }
+  .dashboard .dt-container .dt-search input { width: min(230px, 100%); }
+}
+.dashboard .dt-container .dt-length select.dt-input { border: 1px solid #dfe9ee; border-radius: 9px; color: #5e7886; }

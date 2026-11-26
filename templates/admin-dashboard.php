@@ -292,11 +292,12 @@ $metricIcons = [
             <section class="panel links-panel">
                 <div class="links-heading">
                     <div>
+                        <p class="links-eyebrow">DAFTAR TAUTAN</p>
                         <h2>Tautan Publik</h2>
-                        <p>Kelola tautan yang tampil di halaman publik.</p>
+                        <p>Kelola tautan yang tampil di halaman publik SAIMED.</p>
                     </div>
                     <button class="button primary add-link-trigger" type="button" id="open-add-link" aria-haspopup="dialog" aria-controls="add-link-dialog" hidden>
-                        <span aria-hidden="true">+</span> Tambah Tautan Baru
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg> Tambah Tautan
                     </button>
                 </div>
 
@@ -342,9 +343,10 @@ $metricIcons = [
                         </form>
                     </details>
                 </noscript>
-                <div class="links-table-wrap">
+                <p class="links-scroll-hint">Geser tabel ke samping untuk melihat semua kolom.</p>
+                <div class="links-table-wrap" tabindex="0" role="region" aria-label="Tabel tautan publik; geser ke samping untuk melihat seluruh kolom">
                     <table id="links-table" class="display links-table">
-                        <thead><tr><th>Nama</th><th>URL</th><th>Urutan</th><th>Status</th><th>Unggulan</th><th>Aksi</th></tr></thead>
+                        <thead><tr><th>Nama Tautan</th><th>URL Tujuan</th><th>Urutan</th><th>Status</th><th>Unggulan</th><th>Aksi</th></tr></thead>
                         <tbody>
                         <?php foreach ($allLinks as $link): ?>
                             <tr>
@@ -352,18 +354,18 @@ $metricIcons = [
                                 <td><span class="links-url" title="<?= h($link['url']) ?>"><?= h($link['url']) ?></span></td>
                                 <td><?= h($link['sort_order']) ?></td>
                                 <td><span class="link-status <?= boolval_db($link['is_active']) ? 'is-active' : 'is-inactive' ?>"><?= boolval_db($link['is_active']) ? 'Aktif' : 'Nonaktif' ?></span></td>
-                                <td><?= boolval_db($link['featured']) ? 'Ya' : 'Tidak' ?></td>
+                                <td><span class="link-featured <?= boolval_db($link['featured']) ? 'is-featured' : '' ?>"><?= boolval_db($link['featured']) ? 'Ya' : 'Tidak' ?></span></td>
                                 <td>
                                 <?php if ((int) $link['id'] > 0): ?>
                                     <div class="link-row-actions">
                                         <button type="button" class="button edit-link-trigger" aria-haspopup="dialog" aria-controls="edit-link-dialog" hidden
                                             data-id="<?= h($link['id']) ?>" data-title="<?= h($link['title']) ?>" data-url="<?= h($link['url']) ?>"
-                                            data-order="<?= h($link['sort_order']) ?>" data-active="<?= boolval_db($link['is_active']) ? '1' : '0' ?>" data-featured="<?= boolval_db($link['featured']) ? '1' : '0' ?>">Edit</button>
+                                            data-order="<?= h($link['sort_order']) ?>" data-active="<?= boolval_db($link['is_active']) ? '1' : '0' ?>" data-featured="<?= boolval_db($link['featured']) ? '1' : '0' ?>" aria-label="Edit <?= h($link['title']) ?>"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4Z"/></svg> Edit</button>
                                         <form method="post" class="delete-link-form" onsubmit="return confirm('Hapus tautan ini?')">
                                             <?php token_input(); ?>
                                             <input type="hidden" name="action" value="delete">
                                             <input type="hidden" name="id" value="<?= h($link['id']) ?>">
-                                            <button class="button danger" type="submit">Hapus</button>
+                                            <button class="button danger" type="submit" aria-label="Hapus <?= h($link['title']) ?>"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M10 11v6m4-6v6M5 7l1 13h12l1-13M9 7V4h6v3"/></svg> Hapus</button>
                                         </form>
                                     </div>
                                     <noscript>
