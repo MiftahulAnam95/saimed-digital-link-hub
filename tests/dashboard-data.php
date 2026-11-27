@@ -26,6 +26,13 @@ foreach (['=1+1', '+SUM(A1)', '-1+2', '@cmd', "  =cmd", "\t@cmd", "\rtext"] as $
     expect_data(str_starts_with(dashboard_csv_cell($value), "'"), 'Formula spreadsheet harus dinetralkan');
 }
 expect_data(dashboard_csv_cell('Biasa') === 'Biasa', 'Teks biasa harus tetap');
+foreach ([null, '', 'Label lama'] as $label) {
+    $view = ['event_type' => 'view', 'target_label' => $label];
+    expect_data(dashboard_event_label($view) === 'Landing Page', 'Aktivitas view harus berlabel Landing Page');
+    expect_data(dashboard_csv_row($view)[2] === 'Landing Page', 'CSV harus menampilkan Landing Page');
+}
+expect_data(dashboard_event_label(['event_type' => 'social_click', 'target_label' => 'Instagram']) === 'Instagram', 'Label klik harus tetap');
+expect_data(dashboard_event_label(['event_type' => 'link_click']) === '' && dashboard_event_label(['event_type' => 'link_click'], 'Halaman publik') === 'Halaman publik', 'Fallback non-view harus tetap');
 $row = dashboard_csv_row(['created_at' => '2026-01-01 00:00:00', 'event_type' => 'link_click', 'target_label' => '=cmd', 'device' => 'Mobile', 'visitor_id' => 'secret']);
 expect_data($row === ['2026-01-01 07:00:00', 'link_click', "'=cmd", 'Mobile'], 'Kolom ekspor salah atau membocorkan ID');
 echo "Tes data dashboard berhasil.\n";

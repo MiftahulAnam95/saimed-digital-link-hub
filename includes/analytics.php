@@ -56,6 +56,12 @@ function clean($value, int $maxLength): ?string
     return substr(trim($value), 0, $maxLength);
 }
 
+/** IP disediakan server web, bukan dari input atau header yang dikirim pengunjung. */
+function analytics_client_ip($address): ?string
+{
+    return is_string($address) && filter_var($address, FILTER_VALIDATE_IP) !== false ? $address : null;
+}
+
 /** Endpoint untuk mencatat kunjungan dan klik dari halaman publik. */
 function track(?string $rawBody = null): void
 {
@@ -79,10 +85,10 @@ function track(?string $rawBody = null): void
 
     try {
         $sql = 'INSERT INTO analytics_events
-            (event_type, link_id, link_key, target_label, visitor_id, path, referrer,
+            (event_type, link_id, link_key, target_label, visitor_id, ip_address, path, referrer,
              user_agent, device, browser, os)
             VALUES
-            (?, (SELECT id FROM links WHERE `key` = ?), ?, ?, ?, ?, ?, ?, ?, ?, ?)';
+            (?, (SELECT id FROM links WHERE `key` = ?), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)';
         $statement = db()->prepare($sql);
         $statement->execute([
             $body['eventType'],
@@ -90,6 +96,7 @@ function track(?string $rawBody = null): void
             $linkKey,
             clean($body['targetLabel'] ?? null, 180),
             clean($body['visitorId'] ?? null, 120) ?? $fallbackId,
+            analytics_client_ip($_SERVER['REMOTE_ADDR'] ?? null),
             clean($body['path'] ?? null, 240) ?? '/',
             clean($body['referrer'] ?? null, 500),
             $userAgent,

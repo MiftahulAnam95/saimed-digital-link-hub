@@ -26,10 +26,10 @@ try {
     }
 
     $event = $database->prepare(
-        'INSERT INTO analytics_events (event_type, link_id, link_key, visitor_id, created_at)
-         VALUES (?, ?, ?, ?, ?)'
+        'INSERT INTO analytics_events (event_type, link_id, link_key, visitor_id, ip_address, created_at)
+         VALUES (?, ?, ?, ?, ?, ?)'
     );
-    $event->execute(['link_click', $id, $key, 'test-visitor', gmdate('Y-m-d H:i:s')]);
+    $event->execute(['link_click', $id, $key, 'test-visitor', '2001:db8::1', gmdate('Y-m-d H:i:s')]);
     $check = $database->prepare('SELECT COUNT(*) AS total FROM analytics_events WHERE link_id = ? AND created_at >= ?');
     $check->execute([$id, gmdate('Y-m-d 00:00:00')]);
     if ((int) $check->get_result()->fetch_assoc()['total'] !== 1) {
@@ -38,11 +38,11 @@ try {
 
     $delete = $database->prepare('DELETE FROM links WHERE id = ?');
     $delete->execute([$id]);
-    $check = $database->prepare('SELECT link_id FROM analytics_events WHERE link_key = ?');
+    $check = $database->prepare('SELECT link_id, ip_address FROM analytics_events WHERE link_key = ?');
     $check->execute([$key]);
     $row = $check->get_result()->fetch_assoc();
-    if (!$row || $row['link_id'] !== null) {
-        throw new RuntimeException('Relasi ON DELETE SET NULL gagal.');
+    if (!$row || $row['link_id'] !== null || $row['ip_address'] !== '2001:db8::1') {
+        throw new RuntimeException('Relasi ON DELETE SET NULL atau penyimpanan alamat IP gagal.');
     }
     echo "Pengujian MySQL berhasil.\n";
 } finally {

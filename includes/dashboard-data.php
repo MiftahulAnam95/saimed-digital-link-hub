@@ -49,6 +49,13 @@ function dashboard_trend(int $current, int $previous): string
     return ($change > 0 ? '+' : '') . number_format($change, 1, ',', '.') . '% vs periode sebelumnya';
 }
 
+/** Label tampilan tanpa mengubah data analytics yang tersimpan. */
+function dashboard_event_label(array $event, string $fallback = ''): string
+{
+    if (($event['event_type'] ?? '') === 'view') return 'Landing Page';
+    return (string) ($event['target_label'] ?? $fallback);
+}
+
 /** Lindungi nilai dari eksekusi formula saat CSV dibuka di spreadsheet. */
 function dashboard_csv_cell($value): string
 {
@@ -60,7 +67,7 @@ function dashboard_csv_row(array $event): array
 {
     $row = [
         dashboard_wib($event['created_at'] ?? null, 'Y-m-d H:i:s'), $event['event_type'] ?? '',
-        $event['target_label'] ?? '', $event['device'] ?? '',
+        dashboard_event_label($event), $event['device'] ?? '',
     ];
     return array_map('dashboard_csv_cell', $row);
 }

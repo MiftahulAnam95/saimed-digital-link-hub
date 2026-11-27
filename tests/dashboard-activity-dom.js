@@ -9,10 +9,10 @@ const root = path.join(__dirname, '..');
 const read = file => fs.readFileSync(path.join(root, file), 'utf8');
 const rows = Array.from({ length: 15 }, (_, i) => {
   const day = String(15 - i).padStart(2, '0');
-  return `<tr><td data-order="2026-01-${day} 00:00:00">${day} Jan 2026 07:00</td><td>view</td><td>Halaman ${15 - i}</td><td>Mobile</td><td>pengunjung</td></tr>`;
+  return `<tr><td data-order="2026-01-${day} 00:00:00">${day} Jan 2026 07:00</td><td>view</td><td>Halaman ${15 - i}</td><td>Mobile</td><td>2001:db8::1</td></tr>`;
 }).join('');
 function html(body, empty = '') {
-  return `<!doctype html><html><body><div class="activity-table-wrap" tabindex="0"><table id="activity-table"><thead><tr><th>Waktu</th><th>Aktivitas</th><th>Label</th><th>Perangkat</th><th>Pengunjung</th></tr></thead><tbody>${body}</tbody></table>${empty}</div></body></html>`;
+  return `<!doctype html><html><body><div class="activity-table-wrap" tabindex="0"><table id="activity-table"><thead><tr><th>Waktu</th><th>Aktivitas</th><th>Label</th><th>Perangkat</th><th>Alamat IP</th></tr></thead><tbody>${body}</tbody></table>${empty}</div></body></html>`;
 }
 function windowFor(markup, libraries = true) {
   const dom = new JSDOM(markup, { runScripts: 'outside-only', url: 'http://localhost/' });
@@ -40,6 +40,8 @@ assert.equal(document.querySelector('#activity-table tbody tr td').textContent, 
 dt.search('Halaman 15').draw();
 assert.equal(dt.rows({ search: 'applied' }).count(), 1);
 assert.match(document.querySelector('#activity-table tbody').textContent, /Halaman 15/);
+dt.search('2001:db8::1').draw();
+assert.equal(dt.rows({ search: 'applied' }).count(), 15, 'Alamat IP dapat dicari');
 dt.search('tidak ada').draw();
 assert.match(document.querySelector('#activity-table tbody').textContent, /Tidak ada aktivitas yang cocok/);
 dt.search('').draw();dt.page(1).draw('page');

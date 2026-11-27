@@ -33,10 +33,16 @@ function check_xlsx(array $rows): void {
             expect_xlsx($xpath->evaluate('string(//x:c[@r="A2"]/x:is/x:t)') === '2026-01-01 19:00:00', 'Waktu harus dikonversi ke WIB');
             expect_xlsx($xpath->evaluate('string(//x:c[@r="C2"]/x:is/x:t)') === "=SUM(1;2) & <tautan>\nÉ", 'Teks harus dipertahankan dan di-escape');
             expect_xlsx($xpath->evaluate('string(//x:c[@r="C2"]/@t)') === 'inlineStr' && $xpath->evaluate('count(//x:f)') === 0.0, 'Input tidak boleh menjadi formula');
+            expect_xlsx($xpath->evaluate('string(//x:c[@r="C3"]/x:is/x:t)') === 'Landing Page', 'View harus berlabel Landing Page');
+            expect_xlsx($xpath->evaluate('string(//x:c[@r="C4"]/x:is/x:t)') === 'Landing Page', 'View dengan label lama tetap berlabel Landing Page');
         }
         $zip->close();
     } finally { @unlink($path); }
 }
 check_xlsx([]);
-check_xlsx([['created_at' => '2026-01-01 12:00:00', 'event_type' => 'link_click', 'target_label' => "=SUM(1;2) & <tautan>\nÉ\x01\u{FFFE}", 'device' => 'Mobile']]);
+check_xlsx([
+    ['created_at' => '2026-01-01 12:00:00', 'event_type' => 'link_click', 'target_label' => "=SUM(1;2) & <tautan>\nÉ\x01\u{FFFE}", 'device' => 'Mobile'],
+    ['event_type' => 'view', 'target_label' => null],
+    ['event_type' => 'view', 'target_label' => 'Label lama'],
+]);
 echo "Tes Excel dashboard berhasil.\n";

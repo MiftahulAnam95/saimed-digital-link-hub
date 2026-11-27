@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 // Simulasi MySQLi dan respons HTTP untuk memeriksa parameter tracking.
 $scenario = $argv[1] ?? '';
-if (!in_array($scenario, ['valid', 'null', 'invalid', 'method'], true)) {
-    throw new InvalidArgumentException('Pilih valid, null, invalid, atau method.');
+if (!in_array($scenario, ['valid', 'null', 'invalid', 'method', 'bad_ip', 'missing_ip'], true)) {
+    throw new InvalidArgumentException('Pilih skenario yang tersedia.');
 }
 require __DIR__ . '/../includes/analytics.php';
 class TrackFakeDb {
@@ -30,10 +30,17 @@ function json_response(array $data, int $status = 200): void {
 }
 $_SERVER['REQUEST_METHOD'] = $scenario === 'method' ? 'GET' : 'POST';
 $_SERVER['HTTP_USER_AGENT'] = 'Mozilla/5.0 (iPhone) Safari/605.1';
-$_SERVER['REMOTE_ADDR'] = '127.0.0.1';
+$_SERVER['REMOTE_ADDR'] = match ($scenario) {
+    'null' => '2001:db8:85a3:8d3:1319:8a2e:370:7334',
+    'bad_ip' => 'bukan-ip',
+    default => '192.0.2.15',
+};
+if ($scenario === 'missing_ip') unset($_SERVER['REMOTE_ADDR']);
+// Header dan nilai dari klien tidak dapat dipercaya sebagai sumber alamat IP.
+$_SERVER['HTTP_X_FORWARDED_FOR'] = '203.0.113.99';
 $body = match ($scenario) {
-    'valid' => json_encode(['eventType' => 'social_click', 'linkKey' => "x' OR 1=1 --", 'targetLabel' => 'Instagram', 'visitorId' => 'visitor', 'path' => '/']),
-    'null' => json_encode(['eventType' => 'view']),
+    'valid' => json_encode(['eventType' => 'social_click', 'linkKey' => "x' OR 1=1 --", 'targetLabel' => 'Instagram', 'visitorId' => 'visitor', 'path' => '/', 'ip_address' => '203.0.113.99']),
+    'null', 'bad_ip', 'missing_ip' => json_encode(['eventType' => 'view']),
     'invalid' => json_encode(['eventType' => 'bukan-event']),
     default => '{}',
 };
@@ -42,11 +49,15 @@ register_shutdown_function(static function () use ($scenario, $trackDb): void {
     if ($scenario === 'invalid' || $scenario === 'method') {
         if ($responseStatus !== ($scenario === 'invalid' ? 400 : 405) || $trackDb->params) throw new RuntimeException('Request tidak valid harus ditolak sebelum query');
     } else {
-        if ($responseStatus !== 200 || empty($response['tracked']) || count($trackDb->params) !== 11
-            || substr_count($trackDb->sql, '?') !== 11) throw new RuntimeException('Query tracking atau jumlah parameter salah');
+        if ($responseStatus !== 200 || empty($response['tracked']) || count($trackDb->params) !== 12
+            || substr_count($trackDb->sql, '?') !== 12) throw new RuntimeException('Query tracking atau jumlah parameter salah');
         if ($scenario === 'valid' && ($trackDb->params[1] !== "x' OR 1=1 --" || $trackDb->params[2] !== "x' OR 1=1 --"
-            || str_contains($trackDb->sql, "x' OR 1=1 --") || $trackDb->params[8] !== 'Mobile')) throw new RuntimeException('Input harus tetap sebagai parameter');
+            || str_contains($trackDb->sql, "x' OR 1=1 --") || $trackDb->params[9] !== 'Mobile')) throw new RuntimeException('Input harus tetap sebagai parameter');
         if ($scenario === 'null' && ($trackDb->params[1] !== null || $trackDb->params[2] !== null || $trackDb->params[3] !== null)) throw new RuntimeException('Nilai opsional kosong harus tetap null');
+        $expectedIp = match ($scenario) {
+            'valid' => '192.0.2.15', 'null' => '2001:db8:85a3:8d3:1319:8a2e:370:7334', default => null,
+        };
+        if (!str_contains($trackDb->sql, 'ip_address') || $trackDb->params[5] !== $expectedIp) throw new RuntimeException('IP harus berasal dari REMOTE_ADDR yang valid');
     }
     echo "Tes tracking MySQLi $scenario berhasil.\n";
 });
