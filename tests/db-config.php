@@ -6,7 +6,7 @@ require __DIR__ . '/../config/koneksi.php';
 function expect_db_config(bool $ok, string $message): void { if (!$ok) throw new RuntimeException($message); }
 foreach (['DB_HOST', 'DB_PORT', 'DB_DATABASE', 'DB_USERNAME', 'DB_PASSWORD', 'DATABASE_URL'] as $name) putenv($name);
 $config = db_config();
-expect_db_config($config === ['host' => '127.0.0.1', 'port' => '3306', 'database' => 'test-link-saimed', 'username' => 'root', 'password' => ''], 'Konfigurasi bawaan tidak sesuai');
+expect_db_config($config === ['host' => '127.0.0.1', 'port' => '3306', 'database' => 'test_link_saimed', 'username' => 'root', 'password' => ''], 'Konfigurasi bawaan tidak sesuai');
 putenv('DB_DATABASE=database-uji-lain');
 expect_db_config(db_config()['database'] === 'database-uji-lain', 'Nama database dengan tanda hubung harus didukung');
 putenv('DB_DATABASE');
@@ -17,9 +17,9 @@ putenv('DB_USERNAME=user');
 putenv('DB_PASSWORD=test-password');
 $config = db_config();
 expect_db_config($config === ['host' => 'db.example', 'port' => '3307', 'database' => 'custom_db', 'username' => 'user', 'password' => 'test-password'], 'Konfigurasi DB_* harus tetap dapat diubah');
-putenv('DATABASE_URL=mysql://url-user:url-pass@db.example:3308/test-link-saimed');
+putenv('DATABASE_URL=mysql://url-user:url-pass@db.example:3308/test_link_saimed');
 $config = db_config();
-expect_db_config($config === ['host' => 'db.example', 'port' => '3308', 'database' => 'test-link-saimed', 'username' => 'url-user', 'password' => 'url-pass'], 'DATABASE_URL harus didahulukan');
+expect_db_config($config === ['host' => 'db.example', 'port' => '3308', 'database' => 'test_link_saimed', 'username' => 'url-user', 'password' => 'url-pass'], 'DATABASE_URL harus didahulukan');
 putenv('DATABASE_URL');
 putenv('DB_DATABASE=invalid;dbname=other');
 try {
