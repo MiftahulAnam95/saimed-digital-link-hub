@@ -20,6 +20,7 @@ CREATE TABLE IF NOT EXISTS analytics_events (
     link_key VARCHAR(120) COLLATE utf8mb4_bin NULL,
     target_label VARCHAR(180) NULL,
     visitor_id VARCHAR(120) NOT NULL,
+    ip_address VARCHAR(45) NULL,
     path VARCHAR(240) NOT NULL DEFAULT '/',
     referrer TEXT NULL,
     user_agent TEXT NULL,

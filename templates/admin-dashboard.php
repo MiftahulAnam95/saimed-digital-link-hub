@@ -265,7 +265,7 @@ $metricIcons = [
                     <section class="panel recent-panel">
                         <div class="panel-heading"><div><p class="panel-eyebrow">AKTIVITAS</p><h2>Aktivitas Terbaru</h2></div><a class="panel-link" href="?page=admin&amp;tab=activity&amp;days=<?= $days ?>">Lihat semua <span aria-hidden="true">→</span></a></div>
                         <?php foreach (array_slice($events, 0, 4) as $event): ?>
-                            <div class="stat-row"><span><?= h($event['target_label'] ?? 'Halaman publik') ?><small><?= h($event['device']) ?> · <?= h($event['event_type']) ?></small></span><small><?= h(dashboard_wib($event['created_at'], 'd M H:i')) ?> WIB</small></div>
+                            <div class="stat-row"><span><?= h(dashboard_event_label($event, 'Halaman publik')) ?><small><?= h($event['device']) ?> · <?= h($event['event_type']) ?></small></span><small><?= h(dashboard_wib($event['created_at'], 'd M H:i')) ?> WIB</small></div>
                         <?php endforeach; ?>
                         <?php if (!$events): ?><p class="empty-message">Belum ada aktivitas.</p><?php endif; ?>
                     </section>
@@ -443,20 +443,20 @@ $metricIcons = [
                     <h2>Log Aktivitas Pengunjung</h2>
                     <p>50 event terbaru · <?= h($periodLabel) ?></p>
                 </div>
-                <p class="activity-scroll-hint">Geser tabel ke samping untuk melihat semua kolom.</p>
+                <p class="activity-scroll-hint">Geser tabel ke samping untuk melihat semua kolom. Tanda — berarti alamat IP tidak tersedia.</p>
                 <div class="activity-table-wrap" tabindex="0" role="region" aria-label="Tabel log aktivitas pengunjung; geser ke samping untuk melihat seluruh kolom">
                     <table id="activity-table" class="display activity-table">
                         <thead>
-                            <tr><th>Waktu (WIB)</th><th>Aktivitas</th><th>Label</th><th>Perangkat</th><th>Pengunjung</th></tr>
+                            <tr><th>Waktu (WIB)</th><th>Aktivitas</th><th>Label</th><th>Perangkat</th><th>Alamat IP</th></tr>
                         </thead>
                         <tbody>
                             <?php foreach (array_slice($events, 0, 50) as $event): ?>
                                 <tr>
                                     <td data-order="<?= h($event['created_at'] ?? '') ?>"><?= h(dashboard_wib($event['created_at'] ?? null, 'd M Y H:i')) ?></td>
                                     <td><?= h($event['event_type']) ?></td>
-                                    <td><?= h($event['target_label'] ?? 'Halaman publik') ?></td>
+                                    <td><?= h(dashboard_event_label($event, 'Halaman publik')) ?></td>
                                     <td><?= h($event['device']) ?></td>
-                                    <td><?= h(substr($event['visitor_id'], 0, 20)) ?></td>
+                                    <td><?= h(($event['ip_address'] ?? '') ?: '—') ?></td>
                                 </tr>
                             <?php endforeach; ?>
                         </tbody>

@@ -48,7 +48,7 @@ function dashboard_write_xlsx($result, string $destination): void
         while ($event = $result->fetch_assoc()) {
             $writeRow([
                 dashboard_wib($event['created_at'] ?? null, 'Y-m-d H:i:s'),
-                $event['event_type'] ?? '', $event['target_label'] ?? '', $event['device'] ?? '',
+                $event['event_type'] ?? '', dashboard_event_label($event), $event['device'] ?? '',
             ], 0);
         }
         $write('</sheetData><autoFilter ref="A1:D' . $rowNumber . '"/></worksheet>');
