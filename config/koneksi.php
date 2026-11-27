@@ -10,7 +10,7 @@ function db_config(): array
     $host = '127.0.0.1';
     $username = 'root';
     $password = '';
-    $database = 'test_saimed_link';
+    $database = 'test-link-saimed';
     $port = '3306';
 
     // Pengaturan server (jika ada) dapat mengganti nilai localhost ini.

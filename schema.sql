@@ -1,4 +1,4 @@
--- Pilih database MySQL/MariaDB terlebih dahulu, misalnya: USE test_saimed_link;
+-- Pilih database MySQL/MariaDB terlebih dahulu, misalnya: USE `test-link-saimed`;
 -- Import file ini lewat phpMyAdmin atau mysql CLI. Data yang sudah ada tidak dihapus.
 CREATE TABLE IF NOT EXISTS links (
     id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
