@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 require __DIR__ . '/../includes/links.php';
-$_GET = ['days' => '90'];
+$_GET = ['days' => '90', 'export' => ($argv[1] ?? '') === 'xlsx' ? 'xlsx' : 'csv'];
 class ExportTestDb {
     public function prepare(string $sql): ExportTestStatement {
         if (!str_contains($sql, 'created_at >= ?') || !str_contains($sql, 'created_at < ?') || !str_contains($sql, 'is_demo = 0')) throw new RuntimeException('Filter ekspor hilang');
@@ -25,6 +25,17 @@ function db(): ExportTestDb { return new ExportTestDb(); }
 ob_start();
 register_shutdown_function(static function (): void {
     $csv = ob_get_clean();
+    if (($_GET['export'] ?? '') === 'xlsx') {
+        $path = tempnam(sys_get_temp_dir(), 'test-export-');
+        file_put_contents($path, $csv);
+        $zip = new ZipArchive();
+        if ($zip->open($path) !== true) throw new RuntimeException('Ekspor harus menghasilkan file XLSX');
+        $xml = $zip->getFromName('xl/worksheets/sheet1.xml');
+        if (!str_contains($xml, '2026-01-01 19:00:00') || !str_contains($xml, '=SUM(1;2)') || !str_contains($xml, 't="inlineStr"')) throw new RuntimeException('Isi Excel salah atau tidak aman');
+        $zip->close(); unlink($path);
+        echo "Tes endpoint ekspor Excel berhasil.\n";
+        return;
+    }
     $expected = "\xEF\xBB\xBFsep=;\r\n";
     if (!str_starts_with($csv, $expected)) throw new RuntimeException('Format CSV salah');
     $stream = fopen('php://temp', 'w+');

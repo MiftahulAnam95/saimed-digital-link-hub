@@ -23,7 +23,7 @@ if (!$loggedIn) {
     return;
 }
 
-if ($_SERVER['REQUEST_METHOD'] === 'GET' && ($_GET['export'] ?? '') === 'csv') {
+if ($_SERVER['REQUEST_METHOD'] === 'GET' && in_array($_GET['export'] ?? '', ['csv', 'xlsx'], true)) {
     require __DIR__ . '/includes/admin-export.php';
 }
 
