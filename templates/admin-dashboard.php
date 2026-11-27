@@ -155,7 +155,8 @@ $metricIcons = [
                     </form>
                     <div class="report-actions">
                         <a class="button" href="?page=admin&amp;tab=<?= h($tab) ?>&amp;days=<?= h($days) ?>">Perbarui</a>
-                        <a class="button primary" href="?page=admin&amp;export=csv&amp;days=<?= h($days) ?>">Ekspor CSV</a>
+                        <a class="button" href="?page=admin&amp;export=csv&amp;days=<?= h($days) ?>">Ekspor CSV</a>
+                        <a class="button primary" href="?page=admin&amp;export=xlsx&amp;days=<?= h($days) ?>" title="Lebar kolom sudah diatur untuk Excel">Ekspor Excel</a>
                     </div>
                 </div>
             </div>
@@ -195,7 +196,7 @@ $metricIcons = [
                         <span class="period-badge"><?= $chartDays ?> hari</span>
                     </div>
                     <div class="chart-legend" aria-label="Legenda grafik"><span><i class="legend-views"></i>Kunjungan</span><span><i class="legend-clicks"></i>Klik</span></div>
-                    <p class="chart-help">Arahkan kursor atau sentuh grafik untuk melihat rincian (WIB).</p>
+                    <p class="chart-help">Arahkan kursor atau sentuh grafik untuk melihat rincian (WIB). Untuk laporan dengan lebar kolom yang sudah diatur, pilih Ekspor Excel; CSV hanya menyimpan data.</p>
                     <div class="activity-chart" role="group" aria-label="Grafik kunjungan dan klik harian selama <?= $chartDays ?> hari berdasarkan WIB. Rincian tersedia pada tabel di bawah grafik.">
                         <div class="chart-scale" aria-hidden="true"><?php foreach ($chart['scale'] as $tick): ?><span><?= h($tick) ?></span><?php endforeach; ?></div>
                         <div class="chart-plot"<?php if ($chart['points']): ?> role="slider" tabindex="0" aria-label="Data aktivitas harian dalam WIB. Gunakan tombol panah untuk memilih tanggal" aria-valuemin="1" aria-valuemax="<?= count($chart['points']) ?>" aria-valuenow="1" aria-valuetext="<?= h($chart['points'][0]['date']) ?> WIB: <?= h($chart['points'][0]['views']) ?> kunjungan, <?= h($chart['points'][0]['clicks']) ?> klik" data-points="<?= h(json_encode($chart['points'], JSON_UNESCAPED_UNICODE | JSON_INVALID_UTF8_SUBSTITUTE)) ?>"<?php endif; ?>>
